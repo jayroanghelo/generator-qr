@@ -9,7 +9,8 @@
         dot: "square", eyeFrame: "square", eyeBall: "square",
         eyeColorOn: false, eyeColor: "#101728",
         ecc: "MEDIUM", quiet: true,
-        logo: null, logoSize: 20, logoBg: true,
+        logo: null, logoOriginal: null, logoSize: 20, logoBg: true,
+        bgRemove: false, bgTol: 32,
         frameStyle: "none", frameText: "SCAN ME",
         frameFont: "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", frameColor: "#101728",
         type: "url"
@@ -27,7 +28,9 @@
         { id: "geo", label: "Ubicación", icon: "map-pin" },
         { id: "social", label: "Redes", icon: "globe" },
         { id: "app", label: "Tienda de Apps", icon: "smartphone" },
-        { id: "pdf", label: "PDF", icon: "file-text" }
+        { id: "pdf", label: "PDF", icon: "file-text" },
+        { id: "batch", label: "Lote", icon: "layers" },
+        { id: "read", label: "Leer QR", icon: "scan-line" }
       ];
       var tabsEl = $("tabs");
       TYPES.forEach(function (t) {
@@ -160,6 +163,28 @@
         });
       });
 
+      // ----- Iconos visuales de las formas (en vez de texto) -----
+      function frameIcon(type) {
+        if (type === "circle")
+          return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="12" r="2.1" fill="currentColor"/></svg>';
+        var rx = type === "rounded" ? 5.5 : 0.5, brx = type === "rounded" ? 1.4 : 0;
+        return '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="' + rx + '" fill="none" stroke="currentColor" stroke-width="3"/><rect x="10" y="10" width="4" height="4" rx="' + brx + '" fill="currentColor"/></svg>';
+      }
+      function shapeIcon(type) {
+        return '<svg viewBox="0 0 24 24">' + svgShape(type, 2.5, 2.5, 19, "currentColor") + '</svg>';
+      }
+      function decorateSeg(id, kind) {
+        document.querySelectorAll("#" + id + " button").forEach(function (b) {
+          var label = b.textContent.trim();
+          b.title = label;
+          b.setAttribute("aria-label", label);
+          b.innerHTML = (kind === "frame" ? frameIcon(b.dataset.v) : shapeIcon(b.dataset.v));
+        });
+      }
+      decorateSeg("dotStyle", "shape");
+      decorateSeg("eyeFrame", "frame");
+      decorateSeg("eyeBall", "shape");
+
       // ----- Acordeones -----
       document.querySelectorAll(".acc-head").forEach(function (h) {
         h.onclick = function () { h.parentElement.classList.toggle("open"); };
@@ -177,26 +202,123 @@
         r.onload = function () {
           var img = new Image();
           img.onload = function () {
-            state.logo = img;
-            $("logoThumb").src = r.result;
+            state.logoOriginal = img;
             $("logoPreview").style.display = "flex";
+            $("bgRemoveWrap").style.display = "block";
             // forzar ECC alta para legibilidad
             state.ecc = "HIGH"; $("eccLevel").value = "HIGH";
-            render();
+            applyLogoProcessing();
           };
           img.src = r.result;
         };
         r.readAsDataURL(file);
       }
-      $("logoRemove").onclick = function () { state.logo = null; $("logoPreview").style.display = "none"; logoInput.value = ""; render(); };
+
+      // ---- Quitafondos offline (relleno por proximidad desde los bordes) ----
+      function removeBackground(img, tol) {
+        var max = 600;
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var sc = Math.min(1, max / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
+        var cv = document.createElement("canvas"); cv.width = cw; cv.height = ch;
+        var ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0, cw, ch);
+        var id = ctx.getImageData(0, 0, cw, ch), data = id.data;
+        function px(x, y) { var i = (y * cw + x) * 4; return [data[i], data[i + 1], data[i + 2]]; }
+        var cs = [px(0, 0), px(cw - 1, 0), px(0, ch - 1), px(cw - 1, ch - 1)];
+        var bg = [0, 0, 0]; cs.forEach(function (c) { bg[0] += c[0]; bg[1] += c[1]; bg[2] += c[2]; });
+        bg = bg.map(function (v) { return v / 4; });
+        function dist(i) { var a = data[i] - bg[0], b = data[i + 1] - bg[1], c = data[i + 2] - bg[2]; return Math.sqrt(a * a + b * b + c * c); }
+        var thr = tol, total = cw * ch;
+        var visited = new Uint8Array(total);
+        var stack = [];
+        for (var x = 0; x < cw; x++) { stack.push(x); stack.push((ch - 1) * cw + x); }
+        for (var y = 0; y < ch; y++) { stack.push(y * cw); stack.push(y * cw + cw - 1); }
+        while (stack.length) {
+          var p = stack.pop();
+          if (visited[p]) continue; visited[p] = 1;
+          var i = p * 4;
+          if (dist(i) > thr) continue;       // borde del objeto: se conserva, no se propaga
+          data[i + 3] = 0;                    // fondo: transparente
+          var qx = p % cw, qy = (p / cw) | 0;
+          if (qx > 0) stack.push(p - 1);
+          if (qx < cw - 1) stack.push(p + 1);
+          if (qy > 0) stack.push(p - cw);
+          if (qy < ch - 1) stack.push(p + cw);
+        }
+        // Suavizado de bordes (anti-halo): alfa parcial en el contorno
+        var soft = thr * 0.8;
+        var copy = data.slice(0);
+        for (var p2 = 0; p2 < total; p2++) {
+          var i2 = p2 * 4;
+          if (copy[i2 + 3] === 0) continue;
+          var nx = p2 % cw, ny = (p2 / cw) | 0, edge = false;
+          if (nx > 0 && copy[(p2 - 1) * 4 + 3] === 0) edge = true;
+          else if (nx < cw - 1 && copy[(p2 + 1) * 4 + 3] === 0) edge = true;
+          else if (ny > 0 && copy[(p2 - cw) * 4 + 3] === 0) edge = true;
+          else if (ny < ch - 1 && copy[(p2 + cw) * 4 + 3] === 0) edge = true;
+          if (!edge) continue;
+          var d = dist(i2);
+          if (d < thr + soft) {
+            var a = Math.max(0, Math.min(1, (d - thr) / soft));
+            data[i2 + 3] = Math.round(data[i2 + 3] * a);
+          }
+        }
+        ctx.putImageData(id, 0, 0);
+        return cv;
+      }
+
+      function applyLogoProcessing() {
+        if (!state.logoOriginal) { state.logo = null; render(); return; }
+        if (!state.bgRemove) {
+          state.logo = state.logoOriginal;
+          $("logoThumb").src = state.logoOriginal.src;
+          $("logoThumb").classList.remove("alpha");
+          render();
+          return;
+        }
+        var cv = removeBackground(state.logoOriginal, state.bgTol);
+        var out = new Image();
+        out.onload = function () { state.logo = out; render(); };
+        out.src = cv.toDataURL("image/png");
+        $("logoThumb").src = out.src;
+        $("logoThumb").classList.add("alpha");
+      }
+
+      $("logoRemove").onclick = function () {
+        state.logo = null; state.logoOriginal = null; state.bgRemove = false;
+        $("bgRemove").checked = false; $("bgTolWrap").style.display = "none";
+        $("bgRemoveWrap").style.display = "none";
+        $("logoPreview").style.display = "none"; logoInput.value = ""; render();
+      };
       $("logoSize").oninput = function () { state.logoSize = +this.value; $("logoSizeVal").textContent = this.value + "%"; render(); };
       $("logoBg").onchange = function () { state.logoBg = this.checked; render(); };
+      $("bgRemove").onchange = function () { state.bgRemove = this.checked; $("bgTolWrap").style.display = this.checked ? "block" : "none"; applyLogoProcessing(); };
+      $("bgTol").oninput = function () { state.bgTol = +this.value; $("bgTolVal").textContent = this.value; if (state.bgRemove) applyLogoProcessing(); };
 
       // ----- Inputs de contenido -> render -----
       document.querySelectorAll(".field-group input, .field-group textarea, .field-group select").forEach(function (el) {
         el.addEventListener("input", render);
         el.addEventListener("change", render);
       });
+
+      // ----- "https://" obligatorio y fijo en el campo URL -----
+      (function () {
+        var u = $("url_value");
+        function enforce() {
+          var v = u.value;
+          if (!v.startsWith("https://")) {
+            v = v.replace(/^(https?:\/\/|h(t(t(p(s?(:?(\/\/?)?)?)?)?)?)?)/i, "");
+            v = "https://" + v;
+            u.value = v;
+            try { u.setSelectionRange(v.length, v.length); } catch (e) { }
+          }
+        }
+        u.addEventListener("input", function () { enforce(); render(); });
+        u.addEventListener("blur", enforce);
+        u.addEventListener("focus", function () {
+          if (u.selectionStart < 8) { try { u.setSelectionRange(u.value.length, u.value.length); } catch (e) { } }
+        });
+      }());
 
       // ----- Construir cadena de datos según tipo -----
       function esc(s) { return (s || "").replace(/([\\;,:"])/g, "\\$1"); }
@@ -243,8 +365,24 @@
             var pm = $("pdf_mode").value;
             return pm === "direct" ? $("pdf_url").value.trim() : $("pdf_dest").value.trim();
           }
+          case "batch": {
+            var lines = batchEntries();
+            return lines.length ? lines[0] : "";
+          }
+          case "read": return "";
         }
         return "";
+      }
+
+      // Entradas del lote (una por línea, sin vacías)
+      function batchEntries() {
+        var raw = ($("batch_list") ? $("batch_list").value : "") || "";
+        var isUrl = $("batch_type") && $("batch_type").value === "url";
+        return raw.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(function (s) { return s; })
+          .map(function (s) {
+            if (isUrl && !/^[a-z][a-z0-9+.-]*:\/\//i.test(s) && !/^(mailto:|tel:|wifi:)/i.test(s)) return "https://" + s;
+            return s;
+          });
       }
 
       // ====================== RENDERER ======================
@@ -591,6 +729,46 @@
       };
       function flash(msg, ok) { var e = $("errMsg"); e.textContent = msg; e.style.color = ok ? "var(--ok)" : "#ff7b72"; setTimeout(function () { e.textContent = ""; e.style.color = "#ff7b72"; }, 2500); }
 
+      // ====================== COMPROBADOR DE ESCANEABILIDAD ======================
+      $("checkBtn").onclick = function () {
+        var box = $("checkResult");
+        if (!currentQR) { box.className = "check-result bad"; box.textContent = "Primero introduce el contenido."; return; }
+        if (typeof jsQR !== "function") { box.className = "check-result bad"; box.textContent = "Lector no disponible."; return; }
+        box.className = "check-result"; box.textContent = "Comprobando…";
+        setTimeout(function () {
+          var data = buildData();
+          // Render del QR real (con colores, formas y logo) a un canvas
+          var c = document.createElement("canvas");
+          renderToCanvas(currentQR, c, 600);
+          var ctx = c.getContext("2d");
+          var img = ctx.getImageData(0, 0, c.width, c.height);
+          var res = null;
+          try { res = jsQR(img.data, c.width, c.height); } catch (e) { }
+          var ok = res && res.data === data;
+          // Métrica de contraste fg/bg
+          var contrastInfo = contrastReport();
+          if (ok) {
+            box.className = "check-result good";
+            box.innerHTML = "✓ Escanea correctamente" + (contrastInfo.warn ? " · " + contrastInfo.msg : "");
+          } else {
+            box.className = "check-result bad";
+            box.innerHTML = "✗ Difícil de escanear. " + (contrastInfo.warn ? contrastInfo.msg : "Prueba más contraste, menos logo o corrección de errores alta (H).");
+          }
+        }, 30);
+      };
+      function relLum(hex) {
+        hex = (hex || "#000").replace("#", ""); if (hex.length === 3) hex = hex.split("").map(function (c) { return c + c; }).join("");
+        var f = [0, 2, 4].map(function (i) { var v = parseInt(hex.substr(i, 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+        return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2];
+      }
+      function contrastReport() {
+        var l1 = relLum(state.fg), l2 = relLum(state.transparent ? "#ffffff" : state.bg);
+        var ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        if (ratio < 3) return { warn: true, msg: "contraste muy bajo (" + ratio.toFixed(1) + ":1), oscurece el color principal." };
+        if (ratio < 4.5) return { warn: true, msg: "contraste justo (" + ratio.toFixed(1) + ":1)." };
+        return { warn: false, msg: "" };
+      }
+
       // ----- App Store / PDF: alternar cajas según modo -----
       $("app_mode").onchange = function () { $("app_smart_box").style.display = this.value === "smart" ? "block" : "none"; render(); };
       $("pdf_mode").onchange = function () { $("pdf_cover_box").style.display = this.value === "cover" ? "block" : "none"; render(); };
@@ -641,7 +819,235 @@
         flash("Portada descargada: súbela a tu web y pega su URL arriba.", true);
       };
 
+      // ====================== ZIP (almacenamiento, sin dependencias) ======================
+      var CRC_TABLE = (function () {
+        var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++)c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t;
+      })();
+      function crc32(bytes) { var c = 0xFFFFFFFF; for (var i = 0; i < bytes.length; i++)c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+      function strBytes(s) { var b = []; for (var i = 0; i < s.length; i++)b.push(s.charCodeAt(i) & 0xFF); return b; }
+      function makeZip(files) { // files: [{name, bytes(Uint8Array)}]
+        var chunks = [], central = [], offset = 0;
+        function u16(n) { return [n & 0xFF, (n >>> 8) & 0xFF]; }
+        function u32(n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+        files.forEach(function (f) {
+          var name = strBytes(f.name), data = f.bytes, crc = crc32(data), len = data.length;
+          var local = [].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(len), u32(len), u16(name.length), u16(0), name);
+          chunks.push(new Uint8Array(local)); chunks.push(data);
+          central.push([].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(len), u32(len), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset), name));
+          offset += local.length + len;
+        });
+        var cstart = offset, cbytes = [];
+        central.forEach(function (c) { cbytes = cbytes.concat(c); offset += c.length; });
+        var end = [].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(offset - cstart), u32(cstart), u16(0));
+        chunks.push(new Uint8Array(cbytes)); chunks.push(new Uint8Array(end));
+        return new Blob(chunks, { type: "application/zip" });
+      }
+      function dataURLtoBytes(durl) { var b = atob(durl.split(",")[1]); var a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++)a[i] = b.charCodeAt(i); return a; }
+
+      // ====================== GENERACIÓN POR LOTES ======================
+      function updateBatchCount() { var n = batchEntries().length; $("batch_count").textContent = n + (n === 1 ? " entrada" : " entradas"); }
+      $("batch_list").addEventListener("input", updateBatchCount);
+      $("batch_type").addEventListener("change", function () { render(); updateBatchCount(); });
+      $("batch_csv_btn").onclick = function () { $("batch_csv").click(); };
+      $("batch_csv").onchange = function () {
+        var f = this.files[0]; if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          var txt = String(r.result).replace(/[",;]+/g, "\n");
+          var cur = $("batch_list").value.trim();
+          $("batch_list").value = (cur ? cur + "\n" : "") + txt;
+          updateBatchCount(); render();
+        };
+        r.readAsText(f); this.value = "";
+      };
+      $("batch_zip").onclick = function () {
+        var entries = batchEntries();
+        if (!entries.length) { flash("Añade al menos una entrada al lote."); return; }
+        if (entries.length > 500) { flash("Máximo 500 por lote."); return; }
+        var size = +$("dlSize").value || 1024;
+        var btn = $("batch_zip"), oldTxt = btn.textContent; btn.disabled = true;
+        var files = [], pad = String(entries.length).length;
+        var i = 0;
+        function step() {
+          var end = Math.min(i + 8, entries.length);
+          for (; i < end; i++) {
+            try {
+              var qr = window.QREngine.encodeText(entries[i], state.ecc);
+              var c = document.createElement("canvas");
+              renderToCanvas(qr, c, size);
+              var full = applyFrame(c);
+              var num = String(i + 1); while (num.length < pad) num = "0" + num;
+              files.push({ name: "qr-" + num + ".png", bytes: dataURLtoBytes(full.toDataURL("image/png")) });
+            } catch (e) { /* salta entradas demasiado largas */ }
+          }
+          btn.textContent = "Generando… " + i + "/" + entries.length;
+          if (i < entries.length) { setTimeout(step, 0); return; }
+          var blob = makeZip(files);
+          var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+          a.download = "qr-lote-" + Date.now() + ".zip"; a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+          btn.disabled = false; btn.textContent = oldTxt;
+          flash("ZIP con " + files.length + " QR descargado.", true);
+        }
+        step();
+      };
+
+      // ====================== LECTOR DE QR ======================
+      var readStream = null;
+      function stopCamera() { if (readStream) { readStream.getTracks().forEach(function (t) { t.stop(); }); readStream = null; } var v = $("read_video"); v.style.display = "none"; }
+      function showReadResult(text) {
+        $("read_out").style.display = "block";
+        $("read_text").value = text;
+        var open = $("read_open");
+        if (/^(https?:\/\/|mailto:|tel:|wifi:)/i.test(text)) { open.style.display = "inline-flex"; open.href = text; }
+        else open.style.display = "none";
+      }
+      function scanLoop() {
+        var v = $("read_video"); if (!readStream) return;
+        if (v.readyState === v.HAVE_ENOUGH_DATA) {
+          var c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
+          var ctx = c.getContext("2d"); ctx.drawImage(v, 0, 0, c.width, c.height);
+          try {
+            var img = ctx.getImageData(0, 0, c.width, c.height);
+            var res = jsQR(img.data, c.width, c.height);
+            if (res && res.data) { showReadResult(res.data); stopCamera(); flash("QR leído.", true); return; }
+          } catch (e) { }
+        }
+        requestAnimationFrame(scanLoop);
+      }
+      $("read_cam").onclick = function () {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { flash("Tu navegador no permite la cámara aquí; usa 'Subir imagen'."); return; }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function (s) {
+          readStream = s; var v = $("read_video"); v.srcObject = s; v.setAttribute("muted", ""); v.play(); v.style.display = "block";
+          requestAnimationFrame(scanLoop);
+        }).catch(function () { flash("No se pudo abrir la cámara; usa 'Subir imagen'."); });
+      };
+      $("read_img_btn").onclick = function () { $("read_img").click(); };
+      $("read_img").onchange = function () {
+        var f = this.files[0]; if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          var im = new Image();
+          im.onload = function () {
+            var c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight;
+            var ctx = c.getContext("2d"); ctx.drawImage(im, 0, 0);
+            try {
+              var d = ctx.getImageData(0, 0, c.width, c.height);
+              var res = jsQR(d.data, c.width, c.height);
+              if (res && res.data) { showReadResult(res.data); flash("QR leído.", true); }
+              else { flash("No se detectó ningún QR en la imagen."); }
+            } catch (e) { flash("No se pudo leer la imagen."); }
+          };
+          im.src = r.result;
+        };
+        r.readAsDataURL(f); this.value = "";
+      };
+      $("read_copy").onclick = function () {
+        var t = $("read_text").value; if (!t) return;
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { flash("Copiado.", true); }, function () { });
+      };
+      // Al cambiar de pestaña, apaga la cámara si estaba activa
+      document.querySelectorAll(".tab").forEach(function (b) { b.addEventListener("click", function () { if (state.type !== "read") stopCamera(); }); });
+
+      // ====================== HISTORIAL Y PLANTILLAS PROPIAS ======================
+      var DESIGN_KEYS = ["fg", "bg", "transparent", "grad", "fg2", "gradDir", "dot", "eyeFrame", "eyeBall",
+        "eyeColorOn", "eyeColor", "ecc", "quiet", "logoSize", "logoBg", "frameStyle", "frameText", "frameFont", "frameColor"];
+      function pickDesign() { var d = {}; DESIGN_KEYS.forEach(function (k) { d[k] = state[k]; }); return d; }
+      function applyDesign(d) {
+        DESIGN_KEYS.forEach(function (k) { if (d[k] !== undefined) state[k] = d[k]; });
+        $("fgColor").value = state.fg; $("fgColorTxt").value = state.fg;
+        $("bgColor").value = state.bg; $("bgColorTxt").value = state.bg;
+        $("transparentBg").checked = state.transparent;
+        $("gradOn").checked = state.grad; $("gradControls").style.display = state.grad ? "block" : "none";
+        $("fgColor2").value = state.fg2; $("fgColor2Txt").value = state.fg2; $("gradDir").value = state.gradDir;
+        $("eyeColorOn").checked = state.eyeColorOn; $("eyeColorWrap").style.display = state.eyeColorOn ? "block" : "none";
+        $("eyeColor").value = state.eyeColor; $("eyeColorTxt").value = state.eyeColor;
+        $("eccLevel").value = state.ecc; $("quietZone").checked = state.quiet;
+        $("logoSize").value = state.logoSize; $("logoSizeVal").textContent = state.logoSize + "%"; $("logoBg").checked = state.logoBg;
+        $("frameText").value = state.frameText; $("frameFont").value = state.frameFont;
+        $("frameColor").value = state.frameColor; $("frameColorTxt").value = state.frameColor;
+        setSeg("dotStyle", state.dot); setSeg("eyeFrame", state.eyeFrame); setSeg("eyeBall", state.eyeBall); setSeg("frameStyle", state.frameStyle);
+      }
+      function swatchCss(d) { return d.grad ? "linear-gradient(135deg," + d.fg + "," + (d.fg2 || d.fg) + ")" : d.fg; }
+      function lsGet(k, def) { try { return JSON.parse(localStorage.getItem(k)) || def; } catch (e) { return def; } }
+      function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+
+      function renderPresets() {
+        var list = lsGet("qrstudio_presets", []), el = $("presetList");
+        el.innerHTML = "";
+        if (!list.length) { el.innerHTML = '<div class="saved-empty">Aún no has guardado diseños.</div>'; return; }
+        list.forEach(function (p, idx) {
+          var it = document.createElement("div"); it.className = "saved-item";
+          it.innerHTML = '<span class="sw" style="background:' + swatchCss(p.design) + '"></span><span class="nm"></span><button class="del" title="Eliminar">×</button>';
+          it.querySelector(".nm").textContent = p.name;
+          it.onclick = function (e) { if (e.target.classList.contains("del")) return; applyDesign(p.design); render(); flash("Diseño aplicado.", true); };
+          it.querySelector(".del").onclick = function () { var l = lsGet("qrstudio_presets", []); l.splice(idx, 1); lsSet("qrstudio_presets", l); renderPresets(); };
+          el.appendChild(it);
+        });
+      }
+      $("presetSave").onclick = function () {
+        var name = ($("presetName").value || "").trim() || ("Diseño " + (lsGet("qrstudio_presets", []).length + 1));
+        var l = lsGet("qrstudio_presets", []); l.unshift({ name: name, design: pickDesign() });
+        if (l.length > 30) l = l.slice(0, 30);
+        lsSet("qrstudio_presets", l); $("presetName").value = ""; renderPresets(); flash("Diseño guardado.", true);
+      };
+      $("cfgExport").onclick = function () {
+        var cfg = { presets: lsGet("qrstudio_presets", []), current: pickDesign() };
+        var blob = new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" });
+        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "qrstudio-config.json"; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      };
+      $("cfgImportBtn").onclick = function () { $("cfgFile").click(); };
+      $("cfgFile").onchange = function () {
+        var f = this.files[0]; if (!f) return; var r = new FileReader();
+        r.onload = function () {
+          try {
+            var cfg = JSON.parse(r.result);
+            if (cfg.presets) lsSet("qrstudio_presets", cfg.presets);
+            if (cfg.current) { applyDesign(cfg.current); render(); }
+            renderPresets(); flash("Configuración importada.", true);
+          } catch (e) { flash("Archivo no válido."); }
+        };
+        r.readAsText(f); this.value = "";
+      };
+
+      function recordHistory() {
+        var data = buildData(); if (!data) return;
+        var fields = {};
+        document.querySelectorAll(".field-group input, .field-group textarea, .field-group select").forEach(function (el) { if (el.id) fields[el.id] = el.value; });
+        var l = lsGet("qrstudio_history", []);
+        l.unshift({ type: state.type, fields: fields, design: pickDesign(), label: data.slice(0, 48), ts: Date.now() });
+        if (l.length > 15) l = l.slice(0, 15);
+        lsSet("qrstudio_history", l); renderHistory();
+      }
+      function renderHistory() {
+        var list = lsGet("qrstudio_history", []), el = $("historyList");
+        el.innerHTML = "";
+        if (!list.length) { el.innerHTML = '<div class="saved-empty">Tus descargas aparecerán aquí.</div>'; return; }
+        list.forEach(function (h) {
+          var it = document.createElement("div"); it.className = "saved-item";
+          it.innerHTML = '<span class="sw" style="background:' + swatchCss(h.design) + '"></span><span class="nm"></span>';
+          it.querySelector(".nm").textContent = h.label || h.type;
+          it.onclick = function () {
+            // restaura tipo, campos y diseño
+            var tab = Array.prototype.find.call(document.querySelectorAll(".tab"), function (b) { return b.textContent.trim().toLowerCase().indexOf(({ url: "url", text: "texto", wifi: "wifi", vcard: "contacto", email: "email", phone: "teléfono", sms: "sms", geo: "ubicación", social: "redes", app: "tienda", pdf: "pdf", batch: "lote", read: "leer" }[h.type] || h.type)) >= 0; });
+            if (tab) tab.click();
+            Object.keys(h.fields).forEach(function (id) { var e = $(id); if (e) e.value = h.fields[id]; });
+            applyDesign(h.design); render(); flash("Restaurado del historial.", true);
+          };
+          el.appendChild(it);
+        });
+      }
+      $("historyClear").onclick = function () { lsSet("qrstudio_history", []); renderHistory(); };
+
+      // Registrar en historial al descargar
+      var _dlPng = $("dlPng").onclick; $("dlPng").onclick = function () { _dlPng(); recordHistory(); };
+      var _dlSvg = $("dlSvg").onclick; $("dlSvg").onclick = function () { _dlSvg(); recordHistory(); };
+
+      renderPresets(); renderHistory();
+
       // valor de demo inicial
       $("url_value").value = "https://";
+      updateBatchCount();
       render();
     })();
