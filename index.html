@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Studio — Generador de códigos QR seguro y para siempre</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <header class="top">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <path d="M14 14h3v3M21 14v7M17 21h4" />
+      </svg>
+    </div>
+    <div>
+      <h1>QR Studio</h1>
+      <p>Generador de códigos QR personalizados — funciona para siempre, 100% en tu dispositivo.</p>
+    </div>
+    <div class="badges">
+      <div class="badge"><span class="dot"></span>Sin registro</div>
+      <div class="badge"><span class="dot"></span>Sin caducidad</div>
+      <div class="badge"><span class="dot"></span>Offline / privado</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ============ COLUMNA IZQUIERDA: CONTENIDO + DISEÑO ============ -->
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="card">
+        <h2>1 · Contenido</h2>
+        <div class="tabs" id="tabs"></div>
+        <div class="body">
+
+          <!-- URL -->
+          <div class="field-group active" data-type="url">
+            <label class="f">Dirección web (URL)</label>
+            <input type="url" id="url_value" placeholder="https://tu-sitio.com">
+          </div>
+
+          <!-- Texto -->
+          <div class="field-group" data-type="text">
+            <label class="f">Texto libre</label>
+            <textarea id="text_value" placeholder="Escribe cualquier texto…"></textarea>
+          </div>
+
+          <!-- WiFi -->
+          <div class="field-group" data-type="wifi">
+            <label class="f">Nombre de la red (SSID)</label>
+            <input type="text" id="wifi_ssid" placeholder="MiRedWiFi">
+            <label class="f">Contraseña</label>
+            <input type="text" id="wifi_pass" placeholder="contraseña">
+            <div class="row">
+              <div>
+                <label class="f">Seguridad</label>
+                <select id="wifi_enc">
+                  <option value="WPA">WPA/WPA2/WPA3</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Sin contraseña</option>
+                </select>
+              </div>
+              <div>
+                <label class="f">Red oculta</label>
+                <select id="wifi_hidden">
+                  <option value="false">No</option>
+                  <option value="true">Sí</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group" data-type="email">
+            <label class="f">Correo destinatario</label>
+            <input type="email" id="email_to" placeholder="alguien@correo.com">
+            <label class="f">Asunto</label>
+            <input type="text" id="email_subject" placeholder="Asunto del correo">
+            <label class="f">Mensaje</label>
+            <textarea id="email_body" placeholder="Cuerpo del mensaje…"></textarea>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="field-group" data-type="phone">
+            <label class="f">Número de teléfono</label>
+            <input type="tel" id="phone_value" placeholder="+34 600 000 000">
+          </div>
+
+          <!-- SMS -->
+          <div class="field-group" data-type="sms">
+            <label class="f">Número de teléfono</label>
+            <input type="tel" id="sms_number" placeholder="+34 600 000 000">
+            <label class="f">Mensaje</label>
+            <textarea id="sms_body" placeholder="Texto del SMS…"></textarea>
+          </div>
+
+          <!-- vCard -->
+          <div class="field-group" data-type="vcard">
+            <div class="row">
+              <div><label class="f">Nombre</label><input type="text" id="vc_first" placeholder="Juan"></div>
+              <div><label class="f">Apellidos</label><input type="text" id="vc_last" placeholder="Pérez"></div>
+            </div>
+            <label class="f">Teléfono</label><input type="tel" id="vc_phone" placeholder="+34 600 000 000">
+            <label class="f">Correo</label><input type="email" id="vc_email" placeholder="juan@correo.com">
+            <div class="row">
+              <div><label class="f">Empresa</label><input type="text" id="vc_org" placeholder="Empresa S.L."></div>
+              <div><label class="f">Cargo</label><input type="text" id="vc_title" placeholder="Director"></div>
+            </div>
+            <label class="f">Sitio web</label><input type="url" id="vc_url" placeholder="https://…">
+            <label class="f">Dirección</label><input type="text" id="vc_adr" placeholder="Calle, ciudad, país">
+          </div>
+
+          <!-- Ubicación -->
+          <div class="field-group" data-type="geo">
+            <div class="row">
+              <div><label class="f">Latitud</label><input type="text" id="geo_lat" placeholder="40.4168"></div>
+              <div><label class="f">Longitud</label><input type="text" id="geo_lng" placeholder="-3.7038"></div>
+            </div>
+            <div class="hint">Tip: copia las coordenadas desde Google Maps (clic derecho → coordenadas).</div>
+          </div>
+
+          <!-- Redes -->
+          <div class="field-group" data-type="social">
+            <label class="f">Red social</label>
+            <select id="social_net">
+              <option value="https://wa.me/">WhatsApp (número, sin +)</option>
+              <option value="https://instagram.com/">Instagram (usuario)</option>
+              <option value="https://www.tiktok.com/@">TikTok (usuario)</option>
+              <option value="https://www.facebook.com/">Facebook (usuario/página)</option>
+              <option value="https://x.com/">X / Twitter (usuario)</option>
+              <option value="https://t.me/">Telegram (usuario)</option>
+              <option value="https://www.youtube.com/@">YouTube (canal)</option>
+              <option value="https://www.linkedin.com/in/">LinkedIn (perfil)</option>
+            </select>
+            <label class="f">Usuario / número</label>
+            <input type="text" id="social_value" placeholder="tunombre">
+          </div>
+
+          <!-- Tienda de Apps -->
+          <div class="field-group" data-type="app">
+            <label class="f">Nombre de la app</label>
+            <input type="text" id="app_name" placeholder="Mi Aplicación">
+            <label class="f">Enlace App Store (iOS)</label>
+            <input type="url" id="app_ios" placeholder="https://apps.apple.com/app/id...">
+            <label class="f">Enlace Google Play (Android)</label>
+            <input type="url" id="app_android" placeholder="https://play.google.com/store/apps/details?id=...">
+            <label class="f">¿Qué abre el QR?</label>
+            <select id="app_mode">
+              <option value="smart">Página inteligente (detecta el móvil) — recomendado</option>
+              <option value="ios">Solo App Store (iOS)</option>
+              <option value="android">Solo Google Play (Android)</option>
+            </select>
+            <div id="app_smart_box">
+              <label class="f">URL pública donde alojarás la página inteligente</label>
+              <input type="url" id="app_dest" placeholder="https://tudominio.com/app.html">
+              <button class="btn ghost mini" id="genAppPage" style="margin-top:10px;">⬇ Descargar página inteligente
+                (.html)</button>
+              <div class="hint">Sube ese archivo a tu web/hosting y pega aquí su URL. El QR seguirá siendo estático y
+                para siempre; la página redirige sola a la tienda según el móvil.</div>
+            </div>
+          </div>
+
+          <!-- PDF -->
+          <div class="field-group" data-type="pdf">
+            <label class="f">URL del PDF (ya alojado en tu web/Drive)</label>
+            <input type="url" id="pdf_url" placeholder="https://tudominio.com/folleto.pdf">
+            <label class="f">¿Qué abre el QR?</label>
+            <select id="pdf_mode">
+              <option value="direct">Enlace directo al PDF</option>
+              <option value="cover">Página de portada (título, imagen y botón) — requiere alojarla</option>
+            </select>
+            <div id="pdf_cover_box" style="display:none;">
+              <label class="f">Título</label>
+              <input type="text" id="pdf_title" placeholder="Catálogo 2026">
+              <label class="f">Descripción</label>
+              <textarea id="pdf_desc" placeholder="Breve descripción del documento…"></textarea>
+              <label class="f">URL pública donde alojarás la portada</label>
+              <input type="url" id="pdf_dest" placeholder="https://tudominio.com/pdf.html">
+              <button class="btn ghost mini" id="genPdfPage" style="margin-top:10px;">⬇ Descargar página de portada
+                (.html)</button>
+              <div class="hint">Sube ese archivo a tu web y pega aquí su URL. Muestra una portada y un botón “Ver PDF”.
+              </div>
+            </div>
+          </div>
+
+          <div class="err" id="errMsg"></div>
+        </div>
+      </div>
+
+      <!-- DISEÑO debajo de Contenido -->
+      <div class="card">
+        <h2>2 · Diseño</h2>
+        <div class="body">
+
+          <label class="f">Plantillas</label>
+          <div class="tpl-carousel">
+            <button class="tpl-arrow left" id="tplPrev" type="button" aria-label="Anterior">‹</button>
+            <div class="templates" id="templates"></div>
+            <button class="tpl-arrow right" id="tplNext" type="button" aria-label="Siguiente">›</button>
+          </div>
+
+          <div class="acc open" id="accColors">
+            <div class="acc-head">Colores <span class="chev">▾</span></div>
+            <div class="acc-body">
+              <div class="row">
+                <div>
+                  <label class="f">Color principal</label>
+                  <div class="color-field"><input type="color" id="fgColor" value="#101728"><input type="text"
+                      id="fgColorTxt" value="#101728"></div>
+                </div>
+                <div>
+                  <label class="f">Fondo</label>
+                  <div class="color-field"><input type="color" id="bgColor" value="#ffffff"><input type="text"
+                      id="bgColorTxt" value="#ffffff"></div>
+                </div>
+              </div>
+              <div class="check"><input type="checkbox" id="transparentBg"><label for="transparentBg">Fondo
+                  transparente</label></div>
+              <div class="check"><input type="checkbox" id="gradOn"><label for="gradOn">Usar degradado en el color
+                  principal</label></div>
+              <div id="gradControls" style="display:none;">
+                <div class="row">
+                  <div>
+                    <label class="f">Color 2</label>
+                    <div class="color-field"><input type="color" id="fgColor2" value="#6d8cff"><input type="text"
+                        id="fgColor2Txt" value="#6d8cff"></div>
+                  </div>
+                  <div>
+                    <label class="f">Tipo / dirección</label>
+                    <select id="gradDir">
+                      <option value="diag">Diagonal ↘</option>
+                      <option value="horiz">Horizontal →</option>
+                      <option value="vert">Vertical ↓</option>
+                      <option value="radial">Radial ◉</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="acc open" id="accShapes">
+            <div class="acc-head">Formas <span class="chev">▾</span></div>
+            <div class="acc-body">
+              <label class="f">Estilo de puntos</label>
+              <div class="seg" id="dotStyle">
+                <button data-v="square" class="active">Cuadrado</button>
+                <button data-v="rounded">Redondeado</button>
+                <button data-v="extra-rounded">Suave</button>
+                <button data-v="dots">Puntos</button>
+                <button data-v="classy">Hoja</button>
+                <button data-v="diamond">Diamante</button>
+                <button data-v="hexagon">Hexágono</button>
+                <button data-v="triangle">Triángulo</button>
+                <button data-v="star">Estrella</button>
+                <button data-v="heart">Corazón</button>
+                <button data-v="plus">Cruz</button>
+              </div>
+              <label class="f">Marco de los ojos</label>
+              <div class="seg" id="eyeFrame">
+                <button data-v="square" class="active">Cuadrado</button>
+                <button data-v="rounded">Redondeado</button>
+                <button data-v="circle">Círculo</button>
+              </div>
+              <label class="f">Centro de los ojos</label>
+              <div class="seg" id="eyeBall">
+                <button data-v="square" class="active">Cuadrado</button>
+                <button data-v="rounded">Redondeado</button>
+                <button data-v="extra-rounded">Suave</button>
+                <button data-v="circle">Círculo</button>
+                <button data-v="dot">Punto</button>
+                <button data-v="diamond">Diamante</button>
+                <button data-v="hexagon">Hexágono</button>
+                <button data-v="leaf">Hoja</button>
+                <button data-v="plus">Cruz</button>
+              </div>
+              <div class="check"><input type="checkbox" id="eyeColorOn"><label for="eyeColorOn">Color distinto para los
+                  ojos</label></div>
+              <div id="eyeColorWrap" style="display:none;margin-top:6px;">
+                <div class="color-field"><input type="color" id="eyeColor" value="#101728"><input type="text"
+                    id="eyeColorTxt" value="#101728"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="acc" id="accLogo">
+            <div class="acc-head">Logo central <span class="chev">▾</span></div>
+            <div class="acc-body">
+              <div class="logo-drop" id="logoDrop">Haz clic o arrastra una imagen (PNG/JPG/SVG)</div>
+              <input type="file" id="logoInput" accept="image/*" style="display:none;">
+              <div class="logo-preview" id="logoPreview" style="display:none;">
+                <img id="logoThumb" src="" alt="logo">
+                <button class="btn ghost mini" id="logoRemove">Quitar</button>
+              </div>
+              <label class="f">Tamaño del logo</label>
+              <div class="range-row"><input type="range" id="logoSize" min="10" max="30" value="20"><span
+                  id="logoSizeVal">20%</span></div>
+              <div class="check"><input type="checkbox" id="logoBg" checked><label for="logoBg">Recuadro blanco detrás
+                  del logo</label></div>
+              <div class="hint">Con logo se usa corrección de errores alta (H) para que el QR siga escaneando.</div>
+            </div>
+          </div>
+
+          <div class="acc" id="accFrame">
+            <div class="acc-head">Marco <span class="chev">▾</span></div>
+            <div class="acc-body">
+              <label class="f">Estilo de marco</label>
+              <div class="seg" id="frameStyle">
+                <button data-v="none" class="active">Ninguno</button>
+                <button data-v="bottom">Inferior</button>
+                <button data-v="top">Superior</button>
+                <button data-v="border">Borde + etiqueta</button>
+                <button data-v="rounded">Redondeado</button>
+                <button data-v="phone">Móvil</button>
+              </div>
+              <label class="f">Frase del marco</label>
+              <input type="text" id="frameText" value="SCAN ME" placeholder="SCAN ME">
+              <label class="f">Fuente de la frase</label>
+              <select id="frameFont">
+                <option value="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">Sans-Serif</option>
+                <option value="Georgia,'Times New Roman',serif">Serif</option>
+                <option value="'Courier New',monospace">Monoespaciada</option>
+                <option value="'Trebuchet MS',sans-serif">Trebuchet</option>
+                <option value="Verdana,Geneva,sans-serif">Verdana</option>
+                <option value="'Palatino Linotype','Book Antiqua',serif">Elegante</option>
+                <option value="'Comic Sans MS','Chalkboard SE',cursive">Redondeada</option>
+                <option value="Impact,'Arial Black',sans-serif">Impacto</option>
+                <option value="'Brush Script MT','Segoe Script',cursive">Manuscrita</option>
+                <option value="'Century Gothic','Futura',sans-serif">Futura</option>
+                <option value="Garamond,'Hoefler Text',serif">Garamond</option>
+                <option value="Tahoma,Geneva,sans-serif">Tahoma</option>
+              </select>
+              <label class="f">Color del marco</label>
+              <div class="color-field"><input type="color" id="frameColor" value="#101728"><input type="text"
+                  id="frameColorTxt" value="#101728"></div>
+              <div class="hint">El marco va por fuera del QR, así que no afecta al escaneo.</div>
+            </div>
+          </div>
+
+          <div class="acc" id="accAdv">
+            <div class="acc-head">Avanzado <span class="chev">▾</span></div>
+            <div class="acc-body">
+              <label class="f">Corrección de errores</label>
+              <select id="eccLevel">
+                <option value="LOW">L — Baja (7%)</option>
+                <option value="MEDIUM" selected>M — Media (15%)</option>
+                <option value="QUARTILE">Q — Alta (25%)</option>
+                <option value="HIGH">H — Máxima (30%)</option>
+              </select>
+              <div class="hint">Más corrección = QR más resistente a daños y logos, pero más denso.</div>
+              <div class="check"><input type="checkbox" id="quietZone" checked><label for="quietZone">Margen blanco
+                  (recomendado para escanear)</label></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ COLUMNA DERECHA: VISTA PREVIA ============ -->
+    <div>
+      <div class="card" style="position:sticky;top:18px;">
+        <h2>Vista previa</h2>
+        <div class="body preview-wrap">
+          <div class="preview-box" id="previewBox">
+            <canvas id="preview" width="600" height="600"></canvas>
+          </div>
+          <div class="size-sel">
+            <span>Resolución PNG:</span>
+            <select id="dlSize">
+              <option value="512">512 px</option>
+              <option value="1024" selected>1024 px</option>
+              <option value="2048">2048 px</option>
+              <option value="4096">4096 px</option>
+            </select>
+          </div>
+          <div class="dl">
+            <button class="btn primary" id="dlPng">⬇ Descargar PNG</button>
+            <button class="btn ghost" id="dlSvg">⬇ Descargar SVG</button>
+            <button class="btn ghost" id="copyBtn">⧉ Copiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>Privacidad total:</strong> todo se genera en tu navegador con un motor propio.
+    Estos QR son <strong>estáticos</strong>: no caducan, no dependen de ningún servidor y funcionarán mientras existan
+    los lectores de QR.
+    Guarda este archivo y úsalo offline siempre que quieras.
+  </footer>
+
+  <!-- Motor QR (offline) + interfaz, en archivos separados -->
+  <script src="qr-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,647 @@
+    (function () {
+      "use strict";
+      var $ = function (id) { return document.getElementById(id); };
+
+      // ----- Estado de diseño -----
+      var state = {
+        fg: "#101728", bg: "#ffffff", transparent: false,
+        grad: false, fg2: "#6d8cff", gradDir: "diag",
+        dot: "square", eyeFrame: "square", eyeBall: "square",
+        eyeColorOn: false, eyeColor: "#101728",
+        ecc: "MEDIUM", quiet: true,
+        logo: null, logoSize: 20, logoBg: true,
+        frameStyle: "none", frameText: "SCAN ME",
+        frameFont: "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", frameColor: "#101728",
+        type: "url"
+      };
+
+      // ----- Tabs de contenido -----
+      var TYPES = [
+        { id: "url", label: "URL", icon: "link" },
+        { id: "text", label: "Texto", icon: "pencil" },
+        { id: "wifi", label: "WiFi", icon: "wifi" },
+        { id: "vcard", label: "Contacto", icon: "user-round" },
+        { id: "email", label: "Email", icon: "mail" },
+        { id: "phone", label: "Teléfono", icon: "phone" },
+        { id: "sms", label: "SMS", icon: "message-square" },
+        { id: "geo", label: "Ubicación", icon: "map-pin" },
+        { id: "social", label: "Redes", icon: "globe" },
+        { id: "app", label: "Tienda de Apps", icon: "smartphone" },
+        { id: "pdf", label: "PDF", icon: "file-text" }
+      ];
+      var tabsEl = $("tabs");
+      TYPES.forEach(function (t) {
+        var b = document.createElement("button");
+        b.className = "tab" + (t.id === "url" ? " active" : "");
+        b.innerHTML = "<i data-lucide=\"" + t.icon + "\"></i> <span>" + t.label + "</span>";
+        b.onclick = function () {
+          state.type = t.id;
+          document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
+          b.classList.add("active");
+          document.querySelectorAll(".field-group").forEach(function (g) { g.classList.toggle("active", g.dataset.type === t.id); });
+          render();
+        };
+        tabsEl.appendChild(b);
+      });
+
+      if (window.lucide) {
+        lucide.createIcons();
+      } else {
+        setTimeout(function () { if (window.lucide) lucide.createIcons(); }, 100);
+      }
+
+      // ----- Plantillas -----
+      var TEMPLATES = [
+        { name: "Clásico", fg: "#101728", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square" },
+        { name: "Elegante", fg: "#000000", bg: "#ffffff", grad: false, dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Océano", fg: "#0077b6", bg: "#ffffff", grad: true, fg2: "#00b4d8", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Atardecer", fg: "#f72585", bg: "#fff7f2", grad: true, fg2: "#ff8800", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Bosque", fg: "#1b4332", bg: "#f1faee", grad: true, fg2: "#52b788", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Neón", fg: "#7b2ff7", bg: "#0e1116", grad: true, fg2: "#16d0ff", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Coral", fg: "#e63946", bg: "#ffffff", grad: false, dot: "diamond", eyeFrame: "square", eyeBall: "square" },
+        { name: "Real", fg: "#3a0ca3", bg: "#ffffff", grad: true, fg2: "#7209b7", gradDir: "horiz", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Oro Negro", fg: "#bf9b30", bg: "#0e1116", grad: true, fg2: "#ffd700", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", eyeColor: "#ffd700" },
+        { name: "Platino", fg: "#434a54", bg: "#ffffff", grad: true, fg2: "#9aa5b1", gradDir: "vert", dot: "dots", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Rubí", fg: "#9b1d3a", bg: "#fff5f6", grad: true, fg2: "#e0245e", gradDir: "diag", dot: "rounded", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Esmeralda", fg: "#04663b", bg: "#f3fbf6", grad: true, fg2: "#2ecc71", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Zafiro", fg: "#0b3d91", bg: "#ffffff", grad: true, fg2: "#3a86ff", gradDir: "radial", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Amatista", fg: "#5b2a86", bg: "#faf5ff", grad: true, fg2: "#b56cf0", gradDir: "diag", dot: "diamond", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Cobre", fg: "#7c3a14", bg: "#fff7f0", grad: true, fg2: "#d97b34", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Medianoche", fg: "#1a2980", bg: "#0a0e14", grad: true, fg2: "#26d0ce", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#26d0ce" },
+        { name: "Flamenco", fg: "#ff4d6d", bg: "#fff0f3", grad: true, fg2: "#ff9e00", gradDir: "horiz", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Menta", fg: "#0fa3a3", bg: "#f0fffd", grad: true, fg2: "#5ef2c4", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Lavanda", fg: "#6a4c93", bg: "#f8f5ff", grad: true, fg2: "#c9a7eb", gradDir: "vert", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Cibernético", fg: "#00f5d4", bg: "#0d0221", grad: true, fg2: "#f15bb5", gradDir: "diag", dot: "diamond", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#f15bb5" },
+        { name: "Selva", fg: "#386641", bg: "#fefae0", grad: true, fg2: "#a7c957", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Cereza", fg: "#6a040f", bg: "#fff", grad: true, fg2: "#dc2f02", gradDir: "vert", dot: "diamond", eyeFrame: "square", eyeBall: "square" },
+        { name: "Acero", fg: "#2b2d42", bg: "#edf2f4", grad: false, dot: "square", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Tropical", fg: "#ff6b35", bg: "#fffbe6", grad: true, fg2: "#f7c548", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Galaxia", fg: "#3a0ca3", bg: "#05010f", grad: true, fg2: "#f72585", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#f72585" },
+        { name: "Café", fg: "#3e2723", bg: "#f5ede4", grad: true, fg2: "#8d6e63", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Hielo", fg: "#0277bd", bg: "#e8f7ff", grad: true, fg2: "#80d8ff", gradDir: "radial", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Mono Invertido", fg: "#ffffff", bg: "#101728", grad: false, dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" }
+      ];
+      var tEl = $("templates");
+      TEMPLATES.forEach(function (t, i) {
+        var d = document.createElement("div");
+        d.className = "tpl" + (i === 0 ? " active" : "");
+        var grad = t.grad ? "linear-gradient(135deg," + t.fg + "," + (t.fg2 || t.fg) + ")" : t.fg;
+        d.innerHTML = '<div class="sw" style="background:' + grad + '"></div><span>' + t.name + '</span>';
+        d.onclick = function () {
+          document.querySelectorAll(".tpl").forEach(function (x) { x.classList.remove("active"); });
+          d.classList.add("active");
+          applyTemplate(t);
+        };
+        tEl.appendChild(d);
+      });
+
+      // Flechas del carrusel de plantillas
+      $("tplPrev").onclick = function () { tEl.scrollBy({ left: -tEl.clientWidth * 0.8, behavior: "smooth" }); };
+      $("tplNext").onclick = function () { tEl.scrollBy({ left: tEl.clientWidth * 0.8, behavior: "smooth" }); };
+      function updateArrows() {
+        var max = tEl.scrollWidth - tEl.clientWidth - 2;
+        $("tplPrev").style.display = tEl.scrollLeft > 2 ? "flex" : "none";
+        $("tplNext").style.display = tEl.scrollLeft < max ? "flex" : "none";
+      }
+      tEl.addEventListener("scroll", updateArrows);
+      window.addEventListener("resize", updateArrows);
+      updateArrows();
+
+      function applyTemplate(t) {
+        state.fg = t.fg; state.bg = t.bg; state.grad = !!t.grad; state.fg2 = t.fg2 || state.fg2;
+        state.gradDir = t.gradDir || state.gradDir; state.dot = t.dot; state.eyeFrame = t.eyeFrame; state.eyeBall = t.eyeBall;
+        // color de ojos opcional
+        if (t.eyeColor) { state.eyeColorOn = true; state.eyeColor = t.eyeColor; } else { state.eyeColorOn = false; }
+        $("eyeColorOn").checked = state.eyeColorOn;
+        $("eyeColorWrap").style.display = state.eyeColorOn ? "block" : "none";
+        $("eyeColor").value = state.eyeColor; $("eyeColorTxt").value = state.eyeColor;
+        // sincronizar controles
+        $("fgColor").value = state.fg; $("fgColorTxt").value = state.fg;
+        $("bgColor").value = state.bg; $("bgColorTxt").value = state.bg;
+        $("gradOn").checked = state.grad; $("gradControls").style.display = state.grad ? "block" : "none";
+        $("fgColor2").value = state.fg2; $("fgColor2Txt").value = state.fg2; $("gradDir").value = state.gradDir;
+        $("transparentBg").checked = false; state.transparent = false;
+        setSeg("dotStyle", state.dot); setSeg("eyeFrame", state.eyeFrame); setSeg("eyeBall", state.eyeBall);
+        render();
+      }
+      function setSeg(id, val) { document.querySelectorAll("#" + id + " button").forEach(function (b) { b.classList.toggle("active", b.dataset.v === val); }); }
+
+      // ----- Bind controles de color -----
+      function bindColor(colorId, txtId, key) {
+        var c = $(colorId), t = $(txtId);
+        c.oninput = function () { state[key] = c.value; t.value = c.value; render(); };
+        t.oninput = function () { if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(t.value)) { state[key] = t.value; c.value = t.value; render(); } };
+      }
+      bindColor("fgColor", "fgColorTxt", "fg");
+      bindColor("bgColor", "bgColorTxt", "bg");
+      bindColor("fgColor2", "fgColor2Txt", "fg2");
+      bindColor("eyeColor", "eyeColorTxt", "eyeColor");
+      bindColor("frameColor", "frameColorTxt", "frameColor");
+
+      // ----- Marco -----
+      document.querySelectorAll("#frameStyle button").forEach(function (b) {
+        b.onclick = function () { setSeg("frameStyle", b.dataset.v); state.frameStyle = b.dataset.v; render(); };
+      });
+      $("frameText").oninput = function () { state.frameText = this.value; render(); };
+      $("frameFont").onchange = function () { state.frameFont = this.value; render(); };
+
+      $("transparentBg").onchange = function () { state.transparent = this.checked; render(); };
+      $("gradOn").onchange = function () { state.grad = this.checked; $("gradControls").style.display = this.checked ? "block" : "none"; render(); };
+      $("gradDir").onchange = function () { state.gradDir = this.value; render(); };
+      $("eyeColorOn").onchange = function () { state.eyeColorOn = this.checked; $("eyeColorWrap").style.display = this.checked ? "block" : "none"; render(); };
+      $("eccLevel").onchange = function () { state.ecc = this.value; render(); };
+      $("quietZone").onchange = function () { state.quiet = this.checked; render(); };
+
+      // ----- Segmentos de forma -----
+      ["dotStyle", "eyeFrame", "eyeBall"].forEach(function (id) {
+        var key = id === "dotStyle" ? "dot" : (id === "eyeFrame" ? "eyeFrame" : "eyeBall");
+        document.querySelectorAll("#" + id + " button").forEach(function (b) {
+          b.onclick = function () { setSeg(id, b.dataset.v); state[key] = b.dataset.v; render(); };
+        });
+      });
+
+      // ----- Acordeones -----
+      document.querySelectorAll(".acc-head").forEach(function (h) {
+        h.onclick = function () { h.parentElement.classList.toggle("open"); };
+      });
+
+      // ----- Logo -----
+      var logoDrop = $("logoDrop"), logoInput = $("logoInput");
+      logoDrop.onclick = function () { logoInput.click(); };
+      logoDrop.ondragover = function (e) { e.preventDefault(); logoDrop.style.borderColor = "var(--accent)"; };
+      logoDrop.ondragleave = function () { logoDrop.style.borderColor = ""; };
+      logoDrop.ondrop = function (e) { e.preventDefault(); logoDrop.style.borderColor = ""; if (e.dataTransfer.files[0]) loadLogo(e.dataTransfer.files[0]); };
+      logoInput.onchange = function () { if (this.files[0]) loadLogo(this.files[0]); };
+      function loadLogo(file) {
+        var r = new FileReader();
+        r.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            state.logo = img;
+            $("logoThumb").src = r.result;
+            $("logoPreview").style.display = "flex";
+            // forzar ECC alta para legibilidad
+            state.ecc = "HIGH"; $("eccLevel").value = "HIGH";
+            render();
+          };
+          img.src = r.result;
+        };
+        r.readAsDataURL(file);
+      }
+      $("logoRemove").onclick = function () { state.logo = null; $("logoPreview").style.display = "none"; logoInput.value = ""; render(); };
+      $("logoSize").oninput = function () { state.logoSize = +this.value; $("logoSizeVal").textContent = this.value + "%"; render(); };
+      $("logoBg").onchange = function () { state.logoBg = this.checked; render(); };
+
+      // ----- Inputs de contenido -> render -----
+      document.querySelectorAll(".field-group input, .field-group textarea, .field-group select").forEach(function (el) {
+        el.addEventListener("input", render);
+        el.addEventListener("change", render);
+      });
+
+      // ----- Construir cadena de datos según tipo -----
+      function esc(s) { return (s || "").replace(/([\\;,:"])/g, "\\$1"); }
+      function buildData() {
+        switch (state.type) {
+          case "url": return $("url_value").value.trim();
+          case "text": return $("text_value").value;
+          case "wifi": {
+            var ssid = $("wifi_ssid").value, pass = $("wifi_pass").value, enc = $("wifi_enc").value, hid = $("wifi_hidden").value;
+            if (!ssid) return "";
+            if (enc === "nopass") return "WIFI:T:nopass;S:" + esc(ssid) + ";;";
+            return "WIFI:T:" + enc + ";S:" + esc(ssid) + ";P:" + esc(pass) + ";H:" + hid + ";;";
+          }
+          case "email": {
+            var to = $("email_to").value.trim(); if (!to) return "";
+            var q = []; if ($("email_subject").value) q.push("subject=" + encodeURIComponent($("email_subject").value));
+            if ($("email_body").value) q.push("body=" + encodeURIComponent($("email_body").value));
+            return "mailto:" + to + (q.length ? "?" + q.join("&") : "");
+          }
+          case "phone": { var p = $("phone_value").value.replace(/\s/g, ""); return p ? "tel:" + p : ""; }
+          case "sms": { var n = $("sms_number").value.replace(/\s/g, ""); if (!n) return ""; var m = $("sms_body").value; return "SMSTO:" + n + (m ? ":" + m : ""); }
+          case "vcard": {
+            var f = $("vc_first").value, l = $("vc_last").value;
+            if (!f && !l && !$("vc_phone").value && !$("vc_email").value) return "";
+            var v = "BEGIN:VCARD\nVERSION:3.0\n";
+            v += "N:" + (l || "") + ";" + (f || "") + "\nFN:" + ((f + " " + l).trim()) + "\n";
+            if ($("vc_org").value) v += "ORG:" + $("vc_org").value + "\n";
+            if ($("vc_title").value) v += "TITLE:" + $("vc_title").value + "\n";
+            if ($("vc_phone").value) v += "TEL;TYPE=CELL:" + $("vc_phone").value + "\n";
+            if ($("vc_email").value) v += "EMAIL:" + $("vc_email").value + "\n";
+            if ($("vc_url").value) v += "URL:" + $("vc_url").value + "\n";
+            if ($("vc_adr").value) v += "ADR:;;" + $("vc_adr").value + "\n";
+            v += "END:VCARD"; return v;
+          }
+          case "geo": { var la = $("geo_lat").value.trim(), lo = $("geo_lng").value.trim(); return (la && lo) ? "geo:" + la + "," + lo : ""; }
+          case "social": { var base = $("social_net").value, val = $("social_value").value.trim().replace(/^@/, ""); return val ? base + val : ""; }
+          case "app": {
+            var mode = $("app_mode").value;
+            if (mode === "ios") return $("app_ios").value.trim();
+            if (mode === "android") return $("app_android").value.trim();
+            return $("app_dest").value.trim();
+          }
+          case "pdf": {
+            var pm = $("pdf_mode").value;
+            return pm === "direct" ? $("pdf_url").value.trim() : $("pdf_dest").value.trim();
+          }
+        }
+        return "";
+      }
+
+      // ====================== RENDERER ======================
+      function isFinder(x, y, n) { return (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7); }
+
+      function makeFgStyle(ctx, x0, y0, dim) {
+        if (!state.grad) return state.fg;
+        var g;
+        if (state.gradDir === "radial") g = ctx.createRadialGradient(x0 + dim / 2, y0 + dim / 2, dim * 0.05, x0 + dim / 2, y0 + dim / 2, dim * 0.7);
+        else if (state.gradDir === "horiz") g = ctx.createLinearGradient(x0, y0, x0 + dim, y0);
+        else if (state.gradDir === "vert") g = ctx.createLinearGradient(x0, y0, x0, y0 + dim);
+        else g = ctx.createLinearGradient(x0, y0, x0 + dim, y0 + dim);
+        g.addColorStop(0, state.fg); g.addColorStop(1, state.fg2);
+        return g;
+      }
+
+      function roundRect(ctx, x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      // ---- Sistema de formas unificado (canvas + SVG) ----
+      function fr(v) { return Math.round(v * 1000) / 1000; }
+      function rrPath(x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); return "M" + fr(x + r) + " " + fr(y) + "L" + fr(x + w - r) + " " + fr(y) + "Q" + fr(x + w) + " " + fr(y) + " " + fr(x + w) + " " + fr(y + r) + "L" + fr(x + w) + " " + fr(y + h - r) + "Q" + fr(x + w) + " " + fr(y + h) + " " + fr(x + w - r) + " " + fr(y + h) + "L" + fr(x + r) + " " + fr(y + h) + "Q" + fr(x) + " " + fr(y + h) + " " + fr(x) + " " + fr(y + h - r) + "L" + fr(x) + " " + fr(y + r) + "Q" + fr(x) + " " + fr(y) + " " + fr(x + r) + " " + fr(y) + "Z"; }
+      function polyPath(cx, cy, r, sides, rot) { var d = ""; for (var i = 0; i < sides; i++) { var a = rot + i * 2 * Math.PI / sides; d += (i ? "L" : "M") + fr(cx + r * Math.cos(a)) + " " + fr(cy + r * Math.sin(a)); } return d + "Z"; }
+      function starPath(cx, cy, ro, ri, pts, rot) { var d = ""; for (var i = 0; i < pts * 2; i++) { var r = i % 2 ? ri : ro, a = rot + i * Math.PI / pts; d += (i ? "L" : "M") + fr(cx + r * Math.cos(a)) + " " + fr(cy + r * Math.sin(a)); } return d + "Z"; }
+      function plusPath(x, y, s) { var w = s * 0.56, l = x + (s - w) / 2, rg = x + (s + w) / 2, t = y + (s - w) / 2, b = y + (s + w) / 2; return "M" + fr(l) + " " + fr(y) + "L" + fr(rg) + " " + fr(y) + "L" + fr(rg) + " " + fr(t) + "L" + fr(x + s) + " " + fr(t) + "L" + fr(x + s) + " " + fr(b) + "L" + fr(rg) + " " + fr(b) + "L" + fr(rg) + " " + fr(y + s) + "L" + fr(l) + " " + fr(y + s) + "L" + fr(l) + " " + fr(b) + "L" + fr(x) + " " + fr(b) + "L" + fr(x) + " " + fr(t) + "L" + fr(l) + " " + fr(t) + "Z"; }
+      function heartPath(x, y, s) { var cx = x + s / 2; return "M" + fr(cx) + " " + fr(y + s * 0.92) + "C" + fr(x + s * 0.02) + " " + fr(y + s * 0.55) + " " + fr(x + s * 0.12) + " " + fr(y + s * 0.12) + " " + fr(cx) + " " + fr(y + s * 0.34) + "C" + fr(x + s * 0.88) + " " + fr(y + s * 0.12) + " " + fr(x + s * 0.98) + " " + fr(y + s * 0.55) + " " + fr(cx) + " " + fr(y + s * 0.92) + "Z"; }
+      function leafPath(x, y, s) { var r = s * 0.5; return "M" + fr(x + r) + " " + fr(y) + "L" + fr(x + s) + " " + fr(y) + "L" + fr(x + s) + " " + fr(y + s - r) + "Q" + fr(x + s) + " " + fr(y + s) + " " + fr(x + s - r) + " " + fr(y + s) + "L" + fr(x) + " " + fr(y + s) + "L" + fr(x) + " " + fr(y + r) + "Q" + fr(x) + " " + fr(y) + " " + fr(x + r) + " " + fr(y) + "Z"; }
+      function diamondPath(x, y, s) { var c = s / 2; return "M" + fr(x + c) + " " + fr(y) + "L" + fr(x + s) + " " + fr(y + c) + "L" + fr(x + c) + " " + fr(y + s) + "L" + fr(x) + " " + fr(y + c) + "Z"; }
+      function trianglePath(x, y, s) { return "M" + fr(x) + " " + fr(y) + "L" + fr(x + s) + " " + fr(y) + "L" + fr(x + s / 2) + " " + fr(y + s) + "Z"; }
+      function shapeD(type, x, y, s) {
+        var cx = x + s / 2, cy = y + s / 2;
+        switch (type) {
+          case "rounded": return rrPath(x, y, s, s, s * 0.3);
+          case "extra-rounded": return rrPath(x, y, s, s, s * 0.46);
+          case "classy": case "leaf": return leafPath(x, y, s);
+          case "diamond": return diamondPath(x, y, s);
+          case "triangle": return trianglePath(x, y, s);
+          case "hexagon": return polyPath(cx, cy, s * 0.57, 6, -Math.PI / 2);
+          case "star": return starPath(cx, cy, s * 0.58, s * 0.25, 5, -Math.PI / 2);
+          case "heart": return heartPath(x, y, s);
+          case "plus": return plusPath(x, y, s);
+        }
+        return null;
+      }
+      function drawShape(ctx, type, x, y, s) {
+        if (type === "square") { ctx.fillRect(x, y, s + 0.5, s + 0.5); return; }
+        if (type === "dots" || type === "circle") { ctx.beginPath(); ctx.arc(x + s / 2, y + s / 2, s * 0.5, 0, 7); ctx.fill(); return; }
+        if (type === "dot") { ctx.beginPath(); ctx.arc(x + s / 2, y + s / 2, s * 0.36, 0, 7); ctx.fill(); return; }
+        var d = shapeD(type, x, y, s);
+        if (d) { ctx.fill(new Path2D(d)); } else { ctx.fillRect(x, y, s + 0.5, s + 0.5); }
+      }
+      function svgShape(type, x, y, s, fill) {
+        if (type === "square") return svgRoundRect(x, y, s, s, 0, fill);
+        if (type === "dots" || type === "circle") return svgCircle(x + s / 2, y + s / 2, s * 0.5, fill);
+        if (type === "dot") return svgCircle(x + s / 2, y + s / 2, s * 0.36, fill);
+        var d = shapeD(type, x, y, s);
+        return d ? '<path d="' + d + '" fill="' + fill + '"/>' : svgRoundRect(x, y, s, s, 0, fill);
+      }
+      function drawDot(ctx, px, py, ms) { drawShape(ctx, state.dot, px, py, ms); }
+
+      function drawEye(ctx, ex, ey, ms, frameStyle, ballStyle, fgStyle, bgStyle) {
+        // marco 7x7 (anillo de 1 módulo), hueco 5x5, centro 3x3
+        var x = ex * ms, y = ey * ms;
+        ctx.fillStyle = fgStyle;
+        // outer
+        if (frameStyle === "circle") {
+          ctx.beginPath(); ctx.arc(x + 3.5 * ms, y + 3.5 * ms, 3.5 * ms, 0, 7); ctx.fill();
+        } else {
+          roundRect(ctx, x, y, 7 * ms, 7 * ms, frameStyle === "rounded" ? ms * 1.6 : 0); ctx.fill();
+        }
+        // gap (fondo)
+        if (state.transparent) { ctx.save(); ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "#000"; }
+        else ctx.fillStyle = bgStyle;
+        if (frameStyle === "circle") {
+          ctx.beginPath(); ctx.arc(x + 3.5 * ms, y + 3.5 * ms, 2.5 * ms, 0, 7); ctx.fill();
+        } else {
+          roundRect(ctx, x + ms, y + ms, 5 * ms, 5 * ms, frameStyle === "rounded" ? ms * 1.0 : 0); ctx.fill();
+        }
+        if (state.transparent) ctx.restore();
+        // ball 3x3
+        ctx.fillStyle = fgStyle;
+        drawShape(ctx, ballStyle, x + 2 * ms, y + 2 * ms, 3 * ms);
+      }
+
+      var currentQR = null;
+
+      function renderToCanvas(qr, canvas, targetPx) {
+        var n = qr.size;
+        var margin = state.quiet ? 4 : 0;
+        var total = n + margin * 2;
+        var ms = Math.floor(targetPx / total);
+        if (ms < 1) ms = 1;
+        var dim = ms * total;
+        canvas.width = dim; canvas.height = dim;
+        var ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, dim, dim);
+        var bgStyle = state.bg;
+        if (!state.transparent) { ctx.fillStyle = state.bg; ctx.fillRect(0, 0, dim, dim); }
+        ctx.translate(margin * ms, margin * ms);
+
+        var fgStyle = makeFgStyle(ctx, 0, 0, n * ms);
+        var eyeStyle = state.eyeColorOn ? state.eyeColor : fgStyle;
+
+        // datos (sin ojos)
+        ctx.fillStyle = fgStyle;
+        for (var y = 0; y < n; y++)for (var x = 0; x < n; x++) {
+          if (isFinder(x, y, n)) continue;
+          if (!qr.getModule(x, y)) continue;
+          if (qr.isFunctionModule(x, y)) ctx.fillRect(x * ms, y * ms, ms + 0.5, ms + 0.5); // timing/alineación sólidos
+          else drawDot(ctx, x * ms, y * ms, ms);
+        }
+        // ojos
+        drawEye(ctx, 0, 0, ms, state.eyeFrame, state.eyeBall, eyeStyle, bgStyle);
+        drawEye(ctx, n - 7, 0, ms, state.eyeFrame, state.eyeBall, eyeStyle, bgStyle);
+        drawEye(ctx, 0, n - 7, ms, state.eyeFrame, state.eyeBall, eyeStyle, bgStyle);
+
+        // logo
+        if (state.logo) {
+          var ls = (state.logoSize / 100) * n * ms;
+          var cx = (n * ms - ls) / 2, cy = (n * ms - ls) / 2;
+          var pad = ls * 0.12;
+          if (state.logoBg) {
+            ctx.fillStyle = state.transparent ? "#ffffff" : state.bg;
+            roundRect(ctx, cx - pad, cy - pad, ls + pad * 2, ls + pad * 2, ls * 0.18); ctx.fill();
+          }
+          ctx.drawImage(state.logo, cx, cy, ls, ls);
+        }
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
+
+      // ====================== MARCO (frame) ======================
+      function contrast(hex) {
+        hex = (hex || "#000").replace("#", "");
+        if (hex.length === 3) hex = hex.split("").map(function (c) { return c + c; }).join("");
+        var r = parseInt(hex.substr(0, 2), 16), g = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#101728" : "#ffffff";
+      }
+      function frameLayout(q) {
+        var s = state.frameStyle, pad = q * 0.05, labelH = q * 0.17;
+        if (s === "bottom" || s === "rounded") { var r = (s === "rounded") ? q * 0.1 : q * 0.05; return { type: s, outW: q + 2 * pad, outH: pad + q + labelH, qrX: pad, qrY: pad, r: r, labelY: pad + q, labelH: labelH }; }
+        if (s === "top") return { type: s, outW: q + 2 * pad, outH: labelH + q + pad, qrX: pad, qrY: labelH, r: q * 0.05, labelY: 0, labelH: labelH };
+        if (s === "border") { var bw = Math.max(3, q * 0.035), p = bw + q * 0.03, boxH = q + 2 * p; return { type: s, outW: q + 2 * p, outH: boxH + labelH * 0.45, qrX: p, qrY: p, r: q * 0.06, bw: bw, boxH: boxH, labelH: labelH }; }
+        if (s === "phone") { var padX = q * 0.09, bt = q * 0.14, bb = q * 0.2; return { type: s, outW: q + 2 * padX, outH: bt + q + bb, qrX: padX, qrY: bt, r: q * 0.13, bt: bt, bb: bb, labelH: bb }; }
+        return { type: "none", outW: q, outH: q, qrX: 0, qrY: 0 };
+      }
+      function applyFrame(qrCanvas) {
+        var L = frameLayout(qrCanvas.width);
+        if (L.type === "none") return qrCanvas;
+        var q = qrCanvas.width, col = state.frameColor, txt = state.frameText || "";
+        var c = document.createElement("canvas");
+        c.width = Math.round(L.outW); c.height = Math.round(L.outH);
+        var ctx = c.getContext("2d"), fs;
+        if (L.type === "bottom" || L.type === "top" || L.type === "rounded") {
+          ctx.fillStyle = col; roundRect(ctx, 0, 0, L.outW, L.outH, L.r); ctx.fill();
+          ctx.fillStyle = "#ffffff"; roundRect(ctx, L.qrX, L.qrY, q, q, L.type === "rounded" ? L.r * 0.6 : Math.max(2, q * 0.02)); ctx.fill();
+          ctx.drawImage(qrCanvas, L.qrX, L.qrY);
+          fs = L.labelH * 0.46;
+          ctx.fillStyle = contrast(col); ctx.font = "bold " + fs + "px " + state.frameFont;
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(txt, L.outW / 2, L.labelY + L.labelH / 2);
+        } else if (L.type === "border") {
+          ctx.fillStyle = "#ffffff"; roundRect(ctx, L.qrX - L.bw * 0.5, L.qrY - L.bw * 0.5, q + L.bw, q + L.bw, L.r); ctx.fill();
+          ctx.drawImage(qrCanvas, L.qrX, L.qrY);
+          ctx.strokeStyle = col; ctx.lineWidth = L.bw; roundRect(ctx, L.bw / 2, L.bw / 2, L.outW - L.bw, L.boxH - L.bw, L.r); ctx.stroke();
+          fs = L.labelH * 0.46; ctx.font = "bold " + fs + "px " + state.frameFont;
+          var tw = ctx.measureText(txt).width, tagW = tw + fs * 1.6, tagH = L.labelH * 0.82, tagX = (L.outW - tagW) / 2, tagY = L.boxH - tagH / 2;
+          ctx.fillStyle = col; roundRect(ctx, tagX, tagY, tagW, tagH, tagH / 2); ctx.fill();
+          ctx.fillStyle = contrast(col); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(txt, L.outW / 2, tagY + tagH / 2);
+        } else if (L.type === "phone") {
+          ctx.fillStyle = col; roundRect(ctx, 0, 0, L.outW, L.outH, L.r); ctx.fill();
+          var scrX = L.outW * 0.06, scrY = L.bt * 0.62, scrW = L.outW - 2 * scrX, scrH = L.outH - scrY - L.bb * 0.32;
+          ctx.fillStyle = "#ffffff"; roundRect(ctx, scrX, scrY, scrW, scrH, q * 0.05); ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.5)"; roundRect(ctx, (L.outW - q * 0.16) / 2, L.bt * 0.3, q * 0.16, Math.max(2, q * 0.022), q * 0.012); ctx.fill();
+          ctx.drawImage(qrCanvas, L.qrX, L.qrY);
+          fs = L.bb * 0.3; ctx.fillStyle = col; ctx.font = "bold " + fs + "px " + state.frameFont;
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(txt, L.outW / 2, L.qrY + q + (scrY + scrH - (L.qrY + q)) / 2);
+        }
+        return c;
+      }
+
+      function render() {
+        var err = $("errMsg"); err.textContent = "";
+        var data = buildData();
+        var canvas = $("preview");
+        if (!data) {
+          var c = canvas.getContext("2d"); canvas.width = 600; canvas.height = 600;
+          c.clearRect(0, 0, 600, 600); c.fillStyle = "#f2f4f8"; c.fillRect(0, 0, 600, 600);
+          c.fillStyle = "#aab4c2"; c.font = "22px sans-serif"; c.textAlign = "center";
+          c.fillText("Introduce el contenido →", 300, 300);
+          currentQR = null; return;
+        }
+        try {
+          currentQR = window.QREngine.encodeText(data, state.ecc);
+          var qrC = document.createElement("canvas");
+          renderToCanvas(currentQR, qrC, state.frameStyle === "none" ? 600 : 520);
+          var full = applyFrame(qrC);
+          canvas.width = full.width; canvas.height = full.height;
+          var pc = canvas.getContext("2d"); pc.clearRect(0, 0, full.width, full.height);
+          pc.drawImage(full, 0, 0);
+        } catch (e) {
+          err.textContent = e.message || "No se pudo generar el QR.";
+          currentQR = null;
+        }
+      }
+
+      // ====================== SVG EXPORT ======================
+      function svgRoundRect(x, y, w, h, r, fill) { return '<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(h) + '" rx="' + f(r) + '" ry="' + f(r) + '" fill="' + fill + '"/>'; }
+      function svgCircle(cx, cy, r, fill) { return '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(r) + '" fill="' + fill + '"/>'; }
+      function f(v) { return Math.round(v * 1000) / 1000; }
+
+      function buildSVG(qr) {
+        var n = qr.size, ms = 10, margin = state.quiet ? 4 : 0, total = n + margin * 2, dim = total * ms, o = margin * ms;
+        var fgRef, eyeRef, defs = "";
+        if (state.grad) {
+          var coords;
+          if (state.gradDir === "horiz") coords = 'x1="0" y1="0" x2="1" y2="0"';
+          else if (state.gradDir === "vert") coords = 'x1="0" y1="0" x2="0" y2="1"';
+          else coords = 'x1="0" y1="0" x2="1" y2="1"';
+          if (state.gradDir === "radial")
+            defs = '<radialGradient id="fgGrad"><stop offset="0" stop-color="' + state.fg + '"/><stop offset="1" stop-color="' + state.fg2 + '"/></radialGradient>';
+          else
+            defs = '<linearGradient id="fgGrad" ' + coords + '><stop offset="0" stop-color="' + state.fg + '"/><stop offset="1" stop-color="' + state.fg2 + '"/></linearGradient>';
+          fgRef = "url(#fgGrad)";
+          eyeRef = state.eyeColorOn ? state.eyeColor : fgRef;
+        } else { fgRef = state.fg; eyeRef = state.eyeColorOn ? state.eyeColor : fgRef; }
+
+        // ---- contenido del QR (coordenadas 0..dim) ----
+        var inner = "";
+        if (!state.transparent) inner += '<rect width="' + dim + '" height="' + dim + '" fill="' + state.bg + '"/>';
+        for (var y = 0; y < n; y++)for (var x = 0; x < n; x++) {
+          if (isFinder(x, y, n)) continue;
+          if (!qr.getModule(x, y)) continue;
+          var px = o + x * ms, py = o + y * ms;
+          if (qr.isFunctionModule(x, y)) { inner += svgRoundRect(px, py, ms, ms, 0, fgRef); continue; }
+          inner += svgShape(state.dot, px, py, ms, fgRef);
+        }
+        inner += svgEye(o, 0, 0, ms, fgRef, eyeRef);
+        inner += svgEye(o, n - 7, 0, ms, fgRef, eyeRef);
+        inner += svgEye(o, 0, n - 7, ms, fgRef, eyeRef);
+        if (state.logo) {
+          var ls = (state.logoSize / 100) * n * ms, cx = o + (n * ms - ls) / 2, cy = o + (n * ms - ls) / 2, pad = ls * 0.12;
+          if (state.logoBg) inner += svgRoundRect(cx - pad, cy - pad, ls + pad * 2, ls + pad * 2, ls * 0.18, state.transparent ? "#ffffff" : state.bg);
+          inner += '<image x="' + f(cx) + '" y="' + f(cy) + '" width="' + f(ls) + '" height="' + f(ls) + '" href="' + state.logo.src + '"/>';
+        }
+
+        var L = frameLayout(dim);
+        if (L.type === "none") {
+          return '<svg xmlns="http://www.w3.org/2000/svg" width="' + dim + '" height="' + dim + '" viewBox="0 0 ' + dim + ' ' + dim + '">' + (defs ? '<defs>' + defs + '</defs>' : '') + inner + '</svg>';
+        }
+
+        // ---- con marco ----
+        var col = state.frameColor, txt = htmlEsc(state.frameText || ""), tc = contrast(col);
+        var ff = (state.frameFont || "sans-serif").replace(/"/g, "'");
+        var qg = '<g transform="translate(' + f(L.qrX) + ' ' + f(L.qrY) + ')">' + inner + '</g>';
+        function txtEl(cx2, cy2, size, fill) { return '<text x="' + f(cx2) + '" y="' + f(cy2) + '" font-family="' + ff + '" font-weight="bold" font-size="' + f(size) + '" fill="' + fill + '" text-anchor="middle" dominant-baseline="central">' + txt + '</text>'; }
+        var out = '<svg xmlns="http://www.w3.org/2000/svg" width="' + f(L.outW) + '" height="' + f(L.outH) + '" viewBox="0 0 ' + f(L.outW) + ' ' + f(L.outH) + '">';
+        if (defs) out += '<defs>' + defs + '</defs>';
+        var fs;
+        if (L.type === "bottom" || L.type === "top" || L.type === "rounded") {
+          out += svgRoundRect(0, 0, L.outW, L.outH, L.r, col);
+          out += svgRoundRect(L.qrX, L.qrY, dim, dim, L.type === "rounded" ? L.r * 0.6 : dim * 0.02, "#ffffff");
+          out += qg;
+          fs = L.labelH * 0.46; out += txtEl(L.outW / 2, L.labelY + L.labelH / 2, fs, tc);
+        } else if (L.type === "border") {
+          out += svgRoundRect(L.qrX - L.bw * 0.5, L.qrY - L.bw * 0.5, dim + L.bw, dim + L.bw, L.r, "#ffffff");
+          out += qg;
+          out += '<rect x="' + f(L.bw / 2) + '" y="' + f(L.bw / 2) + '" width="' + f(L.outW - L.bw) + '" height="' + f(L.boxH - L.bw) + '" rx="' + f(L.r) + '" ry="' + f(L.r) + '" fill="none" stroke="' + col + '" stroke-width="' + f(L.bw) + '"/>';
+          fs = L.labelH * 0.46;
+          var tw = (state.frameText || "").length * fs * 0.6, tagW = tw + fs * 1.6, tagH = L.labelH * 0.82, tagX = (L.outW - tagW) / 2, tagY = L.boxH - tagH / 2;
+          out += svgRoundRect(tagX, tagY, tagW, tagH, tagH / 2, col);
+          out += txtEl(L.outW / 2, tagY + tagH / 2, fs, tc);
+        } else if (L.type === "phone") {
+          out += svgRoundRect(0, 0, L.outW, L.outH, L.r, col);
+          var scrX = L.outW * 0.06, scrY = L.bt * 0.62, scrW = L.outW - 2 * scrX, scrH = L.outH - scrY - L.bb * 0.32;
+          out += svgRoundRect(scrX, scrY, scrW, scrH, dim * 0.05, "#ffffff");
+          out += svgRoundRect((L.outW - dim * 0.16) / 2, L.bt * 0.3, dim * 0.16, Math.max(2, dim * 0.022), dim * 0.012, "rgba(255,255,255,0.5)");
+          out += qg;
+          fs = L.bb * 0.3; out += txtEl(L.outW / 2, L.qrY + dim + (scrY + scrH - (L.qrY + dim)) / 2, fs, col);
+        }
+        out += '</svg>';
+        return out;
+      }
+
+      function svgEye(o, ex, ey, ms, fg, eye) {
+        var x = o + ex * ms, y = o + ey * ms, bg = state.transparent ? "#ffffff" : state.bg, out = "";
+        var bgFill = state.transparent ? null : bg;
+        if (state.eyeFrame === "circle") {
+          out += svgCircle(x + 3.5 * ms, y + 3.5 * ms, 3.5 * ms, eye);
+          if (bgFill) out += svgCircle(x + 3.5 * ms, y + 3.5 * ms, 2.5 * ms, bgFill);
+          else out += svgCircle(x + 3.5 * ms, y + 3.5 * ms, 2.5 * ms, bg);
+        } else {
+          var r = state.eyeFrame === "rounded" ? ms * 1.6 : 0;
+          out += svgRoundRect(x, y, 7 * ms, 7 * ms, r, eye);
+          out += svgRoundRect(x + ms, y + ms, 5 * ms, 5 * ms, state.eyeFrame === "rounded" ? ms * 1.0 : 0, bg);
+        }
+        out += svgShape(state.eyeBall, x + 2 * ms, y + 2 * ms, 3 * ms, eye);
+        return out;
+      }
+
+      // ====================== DESCARGAS ======================
+      function safeName() { return "qr-" + state.type + "-" + Date.now(); }
+      $("dlPng").onclick = function () {
+        if (!currentQR) { flash("Primero introduce el contenido."); return; }
+        var size = +$("dlSize").value;
+        var tmp = document.createElement("canvas");
+        renderToCanvas(currentQR, tmp, size);
+        var full = applyFrame(tmp);
+        var a = document.createElement("a");
+        a.href = full.toDataURL("image/png");
+        a.download = safeName() + ".png"; a.click();
+      };
+      $("dlSvg").onclick = function () {
+        if (!currentQR) { flash("Primero introduce el contenido."); return; }
+        var svg = buildSVG(currentQR);
+        var blob = new Blob([svg], { type: "image/svg+xml" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = safeName() + ".svg"; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      };
+      $("copyBtn").onclick = function () {
+        if (!currentQR) { flash("Primero introduce el contenido."); return; }
+        var tmp = document.createElement("canvas");
+        renderToCanvas(currentQR, tmp, 1024);
+        tmp = applyFrame(tmp);
+        tmp.toBlob(function (blob) {
+          if (navigator.clipboard && window.ClipboardItem) {
+            navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(
+              function () { flash("¡Copiado al portapapeles!", true); },
+              function () { flash("No se pudo copiar; usa Descargar PNG."); }
+            );
+          } else flash("Tu navegador no permite copiar; usa Descargar.");
+        });
+      };
+      function flash(msg, ok) { var e = $("errMsg"); e.textContent = msg; e.style.color = ok ? "var(--ok)" : "#ff7b72"; setTimeout(function () { e.textContent = ""; e.style.color = "#ff7b72"; }, 2500); }
+
+      // ----- App Store / PDF: alternar cajas según modo -----
+      $("app_mode").onchange = function () { $("app_smart_box").style.display = this.value === "smart" ? "block" : "none"; render(); };
+      $("pdf_mode").onchange = function () { $("pdf_cover_box").style.display = this.value === "cover" ? "block" : "none"; render(); };
+
+      function downloadHtml(name, html) {
+        var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+      function htmlEsc(s) { return (s || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+      // ----- Generar página inteligente de App Store -----
+      $("genAppPage").onclick = function () {
+        var name = $("app_name").value || "Nuestra app";
+        var ios = $("app_ios").value.trim(), and = $("app_android").value.trim();
+        if (!ios && !and) { flash("Añade al menos un enlace de tienda."); return; }
+        var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+          '<title>' + htmlEsc(name) + '</title><style>' +
+          'body{margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(160deg,#0e1116,#1b2330);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}' +
+          '.card{max-width:360px;text-align:center;background:#1c232d;border:1px solid #2b333f;border-radius:20px;padding:32px 26px;box-shadow:0 20px 60px rgba(0,0,0,.4)}' +
+          'h1{font-size:24px;margin:0 0 10px}p{color:#8b98a8;font-size:15px;margin:0 0 22px}' +
+          'a.btn{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;background:#000;border:1px solid #333;border-radius:12px;padding:14px;margin:10px 0;font-weight:600;font-size:15px}' +
+          'a.btn.gp{background:#0f9d58}a.btn:hover{filter:brightness(1.15)}</style></head><body><div class="card">' +
+          '<h1>' + htmlEsc(name) + '</h1><p>Descarga la aplicación en tu tienda</p>' +
+          (ios ? '<a class="btn" id="ios" href="' + htmlEsc(ios) + '">  App Store (iOS)</a>' : '') +
+          (and ? '<a class="btn gp" id="and" href="' + htmlEsc(and) + '">▶ Google Play (Android)</a>' : '') +
+          '</div><script>(function(){var ua=navigator.userAgent||"";var ios=' + JSON.stringify(ios) + ',and=' + JSON.stringify(and) + ';' +
+          'if(/iPhone|iPad|iPod/i.test(ua)&&ios)location.href=ios;else if(/Android/i.test(ua)&&and)location.href=and;})();<\/script></body></html>';
+        downloadHtml("app.html", html);
+        flash("Página descargada: súbela a tu web y pega su URL arriba.", true);
+      };
+
+      // ----- Generar página de portada de PDF -----
+      $("genPdfPage").onclick = function () {
+        var title = $("pdf_title").value || "Documento PDF";
+        var desc = $("pdf_desc").value || "";
+        var url = $("pdf_url").value.trim();
+        if (!url) { flash("Indica primero la URL del PDF."); return; }
+        var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+          '<title>' + htmlEsc(title) + '</title><style>' +
+          'body{margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(160deg,#0e1116,#1b2330);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}' +
+          '.card{max-width:380px;text-align:center;background:#1c232d;border:1px solid #2b333f;border-radius:20px;padding:34px 28px;box-shadow:0 20px 60px rgba(0,0,0,.4)}' +
+          '.ic{font-size:46px}h1{font-size:23px;margin:14px 0 8px}p{color:#8b98a8;font-size:15px;margin:0 0 24px}' +
+          'a.btn{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(135deg,#6d8cff,#9d7bff);border-radius:12px;padding:14px 30px;font-weight:700;font-size:16px}a.btn:hover{filter:brightness(1.1)}</style></head><body>' +
+          '<div class="card"><div class="ic">📄</div><h1>' + htmlEsc(title) + '</h1><p>' + htmlEsc(desc) + '</p>' +
+          '<a class="btn" href="' + htmlEsc(url) + '" target="_blank" rel="noopener">Ver PDF</a></div></body></html>';
+        downloadHtml("pdf.html", html);
+        flash("Portada descargada: súbela a tu web y pega su URL arriba.", true);
+      };
+
+      // valor de demo inicial
+      $("url_value").value = "https://";
+      render();
+    })();
