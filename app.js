@@ -53,10 +53,29 @@
         setTimeout(function () { if (window.lucide) lucide.createIcons(); }, 100);
       }
 
+      // ----- Iconos de Redes Sociales -----
+      var ICONS = {
+        instagram: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>',
+        tiktok: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>',
+        facebook: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%231877F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>',
+        whatsapp: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2325D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>',
+        x: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000000"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>',
+        youtube: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>',
+        linkedin: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230A66C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>'
+      };
+
       // ----- Plantillas -----
       var TEMPLATES = [
         { name: "Clásico", fg: "#101728", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square" },
         { name: "Elegante", fg: "#000000", bg: "#ffffff", grad: false, dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        // Redes Sociales 2026
+        { name: "Instagram", fg: "#833ab4", bg: "#ffffff", grad: true, fg2: "#fd1d1d", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "instagram", frameStyle: "phone", frameText: "SÍGUEME", frameColor: "#E1306C", ecc: "HIGH" },
+        { name: "TikTok", fg: "#00f2fe", bg: "#000000", grad: true, fg2: "#fe0979", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#00f2fe", icon: "tiktok", frameStyle: "bottom", frameText: "FOLLOW ME", frameColor: "#fe0979", ecc: "HIGH" },
+        { name: "Facebook", fg: "#1877F2", bg: "#ffffff", grad: true, fg2: "#42b72a", gradDir: "horiz", dot: "rounded", eyeFrame: "square", eyeBall: "square", icon: "facebook", frameStyle: "bottom", frameText: "SÍGUENOS", frameColor: "#1877F2", ecc: "HIGH" },
+        { name: "WhatsApp", fg: "#128C7E", bg: "#ffffff", grad: true, fg2: "#25D366", gradDir: "diag", dot: "classy", eyeFrame: "circle", eyeBall: "circle", icon: "whatsapp", frameStyle: "rounded", frameText: "CHAT", frameColor: "#25D366", ecc: "HIGH" },
+        { name: "X (Twitter)", fg: "#000000", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square", icon: "x", frameStyle: "border", frameText: "POST", frameColor: "#000000", ecc: "HIGH" },
+        { name: "YouTube", fg: "#FF0000", bg: "#ffffff", grad: true, fg2: "#c4302b", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded", icon: "youtube", frameStyle: "bottom", frameText: "SUSCRÍBETE", frameColor: "#FF0000", ecc: "HIGH" },
+        { name: "LinkedIn", fg: "#0A66C2", bg: "#ffffff", grad: true, fg2: "#0077b5", gradDir: "horiz", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "linkedin", frameStyle: "bottom", frameText: "CONECTAR", frameColor: "#0A66C2", ecc: "HIGH" },
         { name: "Océano", fg: "#0077b6", bg: "#ffffff", grad: true, fg2: "#00b4d8", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
         { name: "Atardecer", fg: "#f72585", bg: "#fff7f2", grad: true, fg2: "#ff8800", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
         { name: "Bosque", fg: "#1b4332", bg: "#f1faee", grad: true, fg2: "#52b788", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
@@ -125,6 +144,44 @@
         $("fgColor2").value = state.fg2; $("fgColor2Txt").value = state.fg2; $("gradDir").value = state.gradDir;
         $("transparentBg").checked = false; state.transparent = false;
         setSeg("dotStyle", state.dot); setSeg("eyeFrame", state.eyeFrame); setSeg("eyeBall", state.eyeBall);
+
+        // Novedad: Marcos y Logos Automáticos
+        if (t.frameStyle) {
+          state.frameStyle = t.frameStyle;
+          setSeg("frameStyle", t.frameStyle);
+        } else {
+          state.frameStyle = "none";
+          setSeg("frameStyle", "none");
+        }
+        if (t.frameText) { state.frameText = t.frameText; $("frameText").value = t.frameText; }
+        if (t.frameColor) { state.frameColor = t.frameColor; $("frameColor").value = t.frameColor; $("frameColorTxt").value = t.frameColor; }
+        
+        if (t.ecc) { state.ecc = t.ecc; $("eccLevel").value = t.ecc; }
+
+        if (t.icon && ICONS[t.icon]) {
+          var img = new Image();
+          img.onload = function() {
+            state.logoOriginal = img;
+            state.logo = img; 
+            state.bgRemove = false;
+            $("bgRemove").checked = false;
+            $("bgTolWrap").style.display = "none";
+            $("logoPreview").style.display = "flex";
+            $("bgRemoveWrap").style.display = "block";
+            $("logoThumb").src = img.src;
+            $("logoThumb").classList.remove("alpha");
+            state.ecc = "HIGH"; $("eccLevel").value = "HIGH";
+            render();
+          };
+          img.src = ICONS[t.icon];
+          return; 
+        } else {
+          state.logo = null; state.logoOriginal = null;
+          $("logoPreview").style.display = "none";
+          $("bgRemoveWrap").style.display = "none";
+          $("logoInput").value = "";
+        }
+
         render();
       }
       function setSeg(id, val) { document.querySelectorAll("#" + id + " button").forEach(function (b) { b.classList.toggle("active", b.dataset.v === val); }); }
