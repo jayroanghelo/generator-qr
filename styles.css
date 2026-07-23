@@ -4,32 +4,37 @@
    ===================================================================== */
 
 :root {
-  --bg: #f2f4f8;
-  --text: #1d1d1f;
+  /* === Marca Jayro Anghelo === */
+  --bg: #f5f5f7;
+  --text: #111111;
+  --ink: #111111;
   --muted: #6e6e73;
   --muted2: #8a8a8f;
-  --accent: #0a84ff;
-  --accent-press: #0060df;
-  --accent2: #6a5cff;
+  --lime: #d9ef67;
+  --lime-deep: #cfe85a;
+  --lime-soft: #ecf6a6;
+  --accent: #d9ef67;
+  --accent-press: #cfe85a;
+  --accent2: #ecf6a6;
   --ok: #34c759;
-  --danger: #ff3b30;
+  --danger: #b42318;
 
-  /* Superficies glass */
-  --glass: rgba(255, 255, 255, 0.62);
-  --glass-strong: rgba(255, 255, 255, 0.78);
-  --fill: rgba(120, 130, 150, 0.10);
-  --fill-strong: rgba(120, 130, 150, 0.16);
-  --hover: rgba(120, 130, 150, 0.08);
+  /* Superficies */
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.88);
+  --fill: rgba(17, 17, 17, 0.045);
+  --fill-strong: rgba(17, 17, 17, 0.08);
+  --hover: rgba(17, 17, 17, 0.05);
 
-  --radius: 22px;
-  --radius-sm: 14px;
-  --shadow: 0 12px 40px rgba(28, 40, 70, 0.10), 0 2px 8px rgba(28, 40, 70, 0.05);
-  --shadow-sm: 0 4px 16px rgba(28, 40, 70, 0.08);
-  --ring: 0 0 0 4px rgba(10, 132, 255, 0.18);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 12px 40px rgba(24, 20, 38, 0.08), 0 2px 8px rgba(24, 20, 38, 0.04);
+  --shadow-sm: 0 4px 16px rgba(24, 20, 38, 0.06);
+  --ring: 0 0 0 4px rgba(217, 239, 103, 0.6);
 
-  --blur: saturate(180%) blur(22px);
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --blur: saturate(150%) blur(20px);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -51,15 +56,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background:
-    radial-gradient(900px 620px at 8% -8%, rgba(10, 132, 255, 0.12), transparent 60%),
-    radial-gradient(820px 600px at 108% 4%, rgba(106, 92, 255, 0.12), transparent 58%),
-    radial-gradient(700px 700px at 50% 120%, rgba(52, 199, 89, 0.07), transparent 60%),
+    radial-gradient(760px 560px at 6% -10%, rgba(217, 239, 103, 0.28), transparent 60%),
+    radial-gradient(720px 560px at 110% 2%, rgba(217, 239, 103, 0.16), transparent 58%),
     linear-gradient(180deg, #fbfbfd 0%, var(--bg) 100%);
   background-attachment: fixed;
 }
 
 a {
-  color: var(--accent);
+  color: var(--ink);
   text-decoration: none;
 }
 
@@ -78,23 +82,53 @@ header.top {
   width: 44px;
   height: 44px;
   border-radius: 13px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
   flex-shrink: 0;
-  box-shadow: 0 8px 20px rgba(10, 132, 255, 0.32);
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.12);
 }
 
-.logo svg {
-  width: 24px;
-  height: 24px;
+/* Enlace "saltar al contenido" (accesibilidad por teclado) */
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 100;
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top .15s ease;
 }
+.skip-link:focus {
+  top: 16px;
+  outline: 3px solid var(--lime);
+  outline-offset: 2px;
+}
+
+/* Enlace de vuelta a la web */
+.back-home {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .15s ease;
+}
+.back-home:hover { color: var(--ink); }
 
 header.top h1 {
-  font-size: clamp(20px, 4vw, 24px);
+  font-family: var(--font-display);
+  font-size: clamp(21px, 4vw, 26px);
   margin: 0;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: -0.03em;
 }
 
@@ -149,13 +183,18 @@ header.top p {
 
 @media (max-width: 980px) {
   .wrap {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     padding: 14px 18px 40px;
     gap: 16px;
   }
 
-  /* En móvil/tablet la vista previa no se queda fija */
-  .wrap>div:last-child .card {
+  /* En móvil/tablet la vista previa va arriba del todo */
+  .wrap > div:last-child {
+    order: -1;
+  }
+
+  .wrap > div:last-child .card {
     position: static !important;
   }
 }
@@ -195,7 +234,7 @@ header.top p {
 .tab {
   font-size: 13px;
   padding: 9px 14px;
-  border-radius: 999px;
+  border-radius: 10px;
   border: none;
   background: var(--fill);
   color: var(--muted);
@@ -218,13 +257,14 @@ header.top p {
 }
 
 .tab.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(10, 132, 255, 0.30);
+  background: var(--lime);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(17, 17, 17, 0.14);
 }
 
 .tab.active svg {
-  stroke: #fff;
+  stroke: var(--ink);
 }
 
 /* ---------------- Form fields ---------------- */
@@ -328,7 +368,7 @@ textarea {
 .check input {
   width: 17px;
   height: 17px;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
 }
 
 /* ---------------- Preview ---------------- */
@@ -376,7 +416,7 @@ textarea {
 /* ---------------- Buttons ---------------- */
 .btn {
   border: none;
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 12px 20px;
   font-size: 14.5px;
   font-weight: 500;
@@ -392,13 +432,15 @@ textarea {
 }
 
 .btn.primary {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(10, 132, 255, 0.30);
+  background: var(--lime);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.12);
 }
 
 .btn.primary:hover {
-  background: var(--accent-press);
+  background: var(--lime-deep);
+  filter: brightness(1.02);
 }
 
 .btn.ghost {
@@ -500,39 +542,56 @@ textarea {
 
 .tpl {
   cursor: pointer;
-  border: none;
-  border-radius: 14px;
-  padding: 7px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 10px;
+  padding: 8px 6px;
   background: var(--fill);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
-  flex: 0 0 116px;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  flex: 0 0 104px;
 }
 
 .tpl:hover {
   background: var(--fill-strong);
   transform: translateY(-2px);
+  border-color: rgba(17, 17, 17, 0.16);
 }
 
 .tpl.active {
-  background: var(--glass-strong);
+  background: #ffffff;
+  border-color: var(--ink);
   box-shadow: var(--ring), var(--shadow-sm);
 }
 
 .tpl .sw {
   width: 100%;
-  height: 36px;
-  border-radius: 9px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
 }
 
-.tpl span {
+.tpl .sw svg {
+  display: block;
+}
+
+.tpl .tpl-name {
   font-size: 11.5px;
-  color: var(--muted);
-  font-weight: 500;
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* ---------------- Color & segmentos ---------------- */
@@ -576,7 +635,7 @@ textarea {
   flex: 1;
   min-width: 70px;
   padding: 10px 8px;
-  border-radius: 11px;
+  border-radius: 10px;
   border: none;
   background: var(--fill);
   color: var(--muted);
@@ -587,8 +646,9 @@ textarea {
 }
 
 .seg button.active {
-  background: #fff;
-  color: var(--accent);
+  background: var(--lime);
+  color: var(--ink);
+  font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 
@@ -597,7 +657,12 @@ textarea {
 }
 
 .seg button.active:hover {
-  color: var(--accent);
+  color: var(--ink);
+}
+
+/* Los iconos de forma heredan el color del botón activo */
+.seg button.active svg {
+  stroke: var(--ink);
 }
 
 /* Iconos de forma dentro de los botones de segmento */
@@ -843,5 +908,25 @@ input[type=range] {
 
   .tabs {
     padding: 14px 18px 0;
+  }
+}
+
+/* Foco visible por teclado en todos los controles interactivos (accesibilidad) */
+.btn:focus-visible,
+.tab:focus-visible,
+.seg button:focus-visible,
+.tpl:focus-visible,
+.tpl-arrow:focus-visible,
+.back-home:focus-visible,
+a:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--lime) 78%, #111 22%);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -4,34 +4,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Studio — Generador de códigos QR seguro y para siempre</title>
+  <title>QR Studio — Generador de códigos QR gratis, sin registro y sin caducidad | Jayro Anghelo</title>
+  <meta name="description"
+    content="Generador de códigos QR gratis y personalizables: URL, WiFi, vCard, PDF, redes y más. Se genera 100% en tu navegador, sin registro y sin caducidad. Descarga en PNG o SVG.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Jayro Anghelo">
+  <meta name="theme-color" content="#d9ef67">
+  <link rel="canonical" href="https://jayroanghelo.com/generator-qr/">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="QR Studio — Generador de códigos QR gratis">
+  <meta property="og:description"
+    content="Códigos QR personalizados generados 100% en tu navegador. Sin registro, sin caducidad. Descarga en PNG o SVG.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jayroanghelo.com/generator-qr/">
+  <meta property="og:image" content="https://jayroanghelo.com/img/og-default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="es_ES">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QR Studio — Generador de códigos QR gratis">
+  <meta name="twitter:description"
+    content="Códigos QR personalizados, privados y sin caducidad. Se generan en tu navegador. Descarga en PNG o SVG.">
+  <meta name="twitter:image" content="https://jayroanghelo.com/img/og-default.png">
+
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "QR Studio",
+    "url": "https://jayroanghelo.com/generator-qr/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "browserRequirements": "Requires a modern web browser",
+    "description": "Generador de códigos QR gratis y personalizables (URL, WiFi, vCard, PDF, redes y más). Se genera 100% en el navegador, sin registro y sin caducidad. Exporta en PNG o SVG.",
+    "inLanguage": "es",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "author": { "@type": "Person", "name": "Jayro Anghelo", "url": "https://jayroanghelo.com" }
+  }
+  </script>
 </head>
 
 <body>
+  <a class="skip-link" href="#qr-main">Saltar al contenido</a>
 
   <header class="top">
-    <div class="logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7" rx="1.5" />
-        <rect x="14" y="3" width="7" height="7" rx="1.5" />
-        <rect x="3" y="14" width="7" height="7" rx="1.5" />
-        <path d="M14 14h3v3M21 14v7M17 21h4" />
-      </svg>
-    </div>
+    <a class="back-home" href="/tools" aria-label="Volver a Herramientas de Jayro Anghelo">
+      <span aria-hidden="true">←</span> Herramientas
+    </a>
+    <img class="logo" src="logo.svg" width="44" height="44"
+      alt="Logo de QR Studio" decoding="async">
     <div>
       <h1>QR Studio</h1>
       <p>Generador de códigos QR personalizados — funciona para siempre, 100% en tu dispositivo.</p>
     </div>
     <div class="badges">
-      <div class="badge"><span class="dot"></span>Sin registro</div>
-      <div class="badge"><span class="dot"></span>Sin caducidad</div>
-      <div class="badge"><span class="dot"></span>Offline / privado</div>
+      <div class="badge"><span class="dot" aria-hidden="true"></span>Sin registro</div>
+      <div class="badge"><span class="dot" aria-hidden="true"></span>Sin caducidad</div>
+      <div class="badge"><span class="dot" aria-hidden="true"></span>Offline / privado</div>
     </div>
   </header>
 
-  <div class="wrap">
+  <main class="wrap" id="qr-main">
 
     <!-- ============ COLUMNA IZQUIERDA: CONTENIDO + DISEÑO ============ -->
     <div style="display:flex;flex-direction:column;gap:18px;">
@@ -42,25 +84,25 @@
 
           <!-- URL -->
           <div class="field-group active" data-type="url">
-            <label class="f">Dirección web (URL)</label>
+            <label class="f" for="url_value">Dirección web (URL)</label>
             <input type="url" id="url_value" placeholder="https://tu-sitio.com">
           </div>
 
           <!-- Texto -->
           <div class="field-group" data-type="text">
-            <label class="f">Texto libre</label>
+            <label class="f" for="text_value">Texto libre</label>
             <textarea id="text_value" placeholder="Escribe cualquier texto…"></textarea>
           </div>
 
           <!-- WiFi -->
           <div class="field-group" data-type="wifi">
-            <label class="f">Nombre de la red (SSID)</label>
+            <label class="f" for="wifi_ssid">Nombre de la red (SSID)</label>
             <input type="text" id="wifi_ssid" placeholder="MiRedWiFi">
-            <label class="f">Contraseña</label>
+            <label class="f" for="wifi_pass">Contraseña</label>
             <input type="text" id="wifi_pass" placeholder="contraseña">
             <div class="row">
               <div>
-                <label class="f">Seguridad</label>
+                <label class="f" for="wifi_enc">Seguridad</label>
                 <select id="wifi_enc">
                   <option value="WPA">WPA/WPA2/WPA3</option>
                   <option value="WEP">WEP</option>
@@ -68,7 +110,7 @@
                 </select>
               </div>
               <div>
-                <label class="f">Red oculta</label>
+                <label class="f" for="wifi_hidden">Red oculta</label>
                 <select id="wifi_hidden">
                   <option value="false">No</option>
                   <option value="true">Sí</option>
@@ -79,17 +121,17 @@
 
           <!-- Email -->
           <div class="field-group" data-type="email">
-            <label class="f">Correo destinatario</label>
+            <label class="f" for="email_to">Correo destinatario</label>
             <input type="email" id="email_to" placeholder="alguien@correo.com">
-            <label class="f">Asunto</label>
+            <label class="f" for="email_subject">Asunto</label>
             <input type="text" id="email_subject" placeholder="Asunto del correo">
-            <label class="f">Mensaje</label>
+            <label class="f" for="email_body">Mensaje</label>
             <textarea id="email_body" placeholder="Cuerpo del mensaje…"></textarea>
           </div>
 
           <!-- Teléfono -->
           <div class="field-group" data-type="phone">
-            <label class="f">Número de teléfono</label>
+            <label class="f" for="phone_value">Número de teléfono</label>
             <input type="tel" id="phone_value" placeholder="+34 600 000 000">
           </div>
 
@@ -220,11 +262,11 @@
             </div>
             <video id="read_video" playsinline style="display:none;width:100%;border-radius:14px;margin-top:12px;"></video>
             <div id="read_out" class="read-out" style="display:none;">
-              <label class="f">Contenido leído</label>
+              <label class="f" for="read_text">Contenido leído</label>
               <textarea id="read_text" readonly></textarea>
               <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
                 <button class="btn ghost mini" id="read_copy">⧉ Copiar</button>
-                <a class="btn ghost mini" id="read_open" target="_blank" rel="noopener"
+                <a class="btn ghost mini" id="read_open" target="_blank" rel="noopener noreferrer"
                   style="display:none;text-decoration:none;">↗ Abrir enlace</a>
               </div>
             </div>
@@ -443,7 +485,8 @@
         <h2>Vista previa</h2>
         <div class="body preview-wrap">
           <div class="preview-box" id="previewBox">
-            <canvas id="preview" width="600" height="600"></canvas>
+            <canvas id="preview" width="600" height="600" role="img"
+              aria-label="Vista previa del código QR generado"></canvas>
           </div>
           <div class="size-sel">
             <span>Resolución PNG:</span>
@@ -464,7 +507,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <footer>
     <strong>Privacidad total:</strong> todo se genera en tu navegador con un motor propio.

@@ -65,50 +65,80 @@
       };
 
       // ----- Plantillas -----
-      var TEMPLATES = [
-        { name: "Clásico", fg: "#101728", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square" },
-        { name: "Elegante", fg: "#000000", bg: "#ffffff", grad: false, dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
-        // Redes Sociales 2026
-        { name: "Instagram", fg: "#833ab4", bg: "#ffffff", grad: true, fg2: "#fd1d1d", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "instagram", frameStyle: "phone", frameText: "SÍGUEME", frameColor: "#E1306C", ecc: "HIGH" },
-        { name: "TikTok", fg: "#00f2fe", bg: "#000000", grad: true, fg2: "#fe0979", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#00f2fe", icon: "tiktok", frameStyle: "bottom", frameText: "FOLLOW ME", frameColor: "#fe0979", ecc: "HIGH" },
-        { name: "Facebook", fg: "#1877F2", bg: "#ffffff", grad: true, fg2: "#42b72a", gradDir: "horiz", dot: "rounded", eyeFrame: "square", eyeBall: "square", icon: "facebook", frameStyle: "bottom", frameText: "SÍGUENOS", frameColor: "#1877F2", ecc: "HIGH" },
-        { name: "WhatsApp", fg: "#128C7E", bg: "#ffffff", grad: true, fg2: "#25D366", gradDir: "diag", dot: "classy", eyeFrame: "circle", eyeBall: "circle", icon: "whatsapp", frameStyle: "rounded", frameText: "CHAT", frameColor: "#25D366", ecc: "HIGH" },
-        { name: "X (Twitter)", fg: "#000000", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square", icon: "x", frameStyle: "border", frameText: "POST", frameColor: "#000000", ecc: "HIGH" },
-        { name: "YouTube", fg: "#FF0000", bg: "#ffffff", grad: true, fg2: "#c4302b", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded", icon: "youtube", frameStyle: "bottom", frameText: "SUSCRÍBETE", frameColor: "#FF0000", ecc: "HIGH" },
-        { name: "LinkedIn", fg: "#0A66C2", bg: "#ffffff", grad: true, fg2: "#0077b5", gradDir: "horiz", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "linkedin", frameStyle: "bottom", frameText: "CONECTAR", frameColor: "#0A66C2", ecc: "HIGH" },
-        { name: "Océano", fg: "#0077b6", bg: "#ffffff", grad: true, fg2: "#00b4d8", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Atardecer", fg: "#f72585", bg: "#fff7f2", grad: true, fg2: "#ff8800", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Bosque", fg: "#1b4332", bg: "#f1faee", grad: true, fg2: "#52b788", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Neón", fg: "#7b2ff7", bg: "#0e1116", grad: true, fg2: "#16d0ff", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
-        { name: "Coral", fg: "#e63946", bg: "#ffffff", grad: false, dot: "diamond", eyeFrame: "square", eyeBall: "square" },
-        { name: "Real", fg: "#3a0ca3", bg: "#ffffff", grad: true, fg2: "#7209b7", gradDir: "horiz", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Oro Negro", fg: "#bf9b30", bg: "#0e1116", grad: true, fg2: "#ffd700", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", eyeColor: "#ffd700" },
-        { name: "Platino", fg: "#434a54", bg: "#ffffff", grad: true, fg2: "#9aa5b1", gradDir: "vert", dot: "dots", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Rubí", fg: "#9b1d3a", bg: "#fff5f6", grad: true, fg2: "#e0245e", gradDir: "diag", dot: "rounded", eyeFrame: "circle", eyeBall: "circle" },
-        { name: "Esmeralda", fg: "#04663b", bg: "#f3fbf6", grad: true, fg2: "#2ecc71", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Zafiro", fg: "#0b3d91", bg: "#ffffff", grad: true, fg2: "#3a86ff", gradDir: "radial", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Amatista", fg: "#5b2a86", bg: "#faf5ff", grad: true, fg2: "#b56cf0", gradDir: "diag", dot: "diamond", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Cobre", fg: "#7c3a14", bg: "#fff7f0", grad: true, fg2: "#d97b34", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Medianoche", fg: "#1a2980", bg: "#0a0e14", grad: true, fg2: "#26d0ce", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#26d0ce" },
-        { name: "Flamenco", fg: "#ff4d6d", bg: "#fff0f3", grad: true, fg2: "#ff9e00", gradDir: "horiz", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
-        { name: "Menta", fg: "#0fa3a3", bg: "#f0fffd", grad: true, fg2: "#5ef2c4", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Lavanda", fg: "#6a4c93", bg: "#f8f5ff", grad: true, fg2: "#c9a7eb", gradDir: "vert", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Cibernético", fg: "#00f5d4", bg: "#0d0221", grad: true, fg2: "#f15bb5", gradDir: "diag", dot: "diamond", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#f15bb5" },
-        { name: "Selva", fg: "#386641", bg: "#fefae0", grad: true, fg2: "#a7c957", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Cereza", fg: "#6a040f", bg: "#fff", grad: true, fg2: "#dc2f02", gradDir: "vert", dot: "diamond", eyeFrame: "square", eyeBall: "square" },
-        { name: "Acero", fg: "#2b2d42", bg: "#edf2f4", grad: false, dot: "square", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Tropical", fg: "#ff6b35", bg: "#fffbe6", grad: true, fg2: "#f7c548", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
-        { name: "Galaxia", fg: "#3a0ca3", bg: "#05010f", grad: true, fg2: "#f72585", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#f72585" },
-        { name: "Café", fg: "#3e2723", bg: "#f5ede4", grad: true, fg2: "#8d6e63", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
-        { name: "Hielo", fg: "#0277bd", bg: "#e8f7ff", grad: true, fg2: "#80d8ff", gradDir: "radial", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
-        { name: "Mono Invertido", fg: "#ffffff", bg: "#101728", grad: false, dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" }
+       var TEMPLATES = [
+        { name: "Clásico", fg: "#111827", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square" },
+        { name: "Elegante", fg: "#0f172a", bg: "#f8fafc", grad: false, dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Minimalista", fg: "#18181b", bg: "#fafafa", grad: false, dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        // Redes Sociales
+        { name: "Instagram", fg: "#c13584", bg: "#ffffff", grad: true, fg2: "#fd1d1d", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "instagram", frameStyle: "rounded", frameText: "SÍGUEME", frameColor: "#e1306c", ecc: "HIGH" },
+        { name: "TikTok", fg: "#00f2fe", bg: "#09090b", grad: true, fg2: "#fe0979", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#00f2fe", icon: "tiktok", frameStyle: "bottom", frameText: "FOLLOW ME", frameColor: "#fe0979", ecc: "HIGH" },
+        { name: "WhatsApp", fg: "#075e54", bg: "#ffffff", grad: true, fg2: "#25d366", gradDir: "diag", dot: "rounded", eyeFrame: "circle", eyeBall: "circle", icon: "whatsapp", frameStyle: "rounded", frameText: "CHAT EN DIRECTO", frameColor: "#25d366", ecc: "HIGH" },
+        { name: "YouTube", fg: "#cc181e", bg: "#ffffff", grad: true, fg2: "#ff0000", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded", icon: "youtube", frameStyle: "bottom", frameText: "VER CANAL", frameColor: "#ff0000", ecc: "HIGH" },
+        { name: "LinkedIn", fg: "#0a66c2", bg: "#ffffff", grad: true, fg2: "#004182", gradDir: "horiz", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", icon: "linkedin", frameStyle: "bottom", frameText: "PERFIL", frameColor: "#0a66c2", ecc: "HIGH" },
+        { name: "Facebook", fg: "#1877f2", bg: "#ffffff", grad: true, fg2: "#0051b3", gradDir: "horiz", dot: "rounded", eyeFrame: "square", eyeBall: "square", icon: "facebook", frameStyle: "bottom", frameText: "PÁGINA", frameColor: "#1877f2", ecc: "HIGH" },
+        { name: "X (Twitter)", fg: "#09090b", bg: "#ffffff", grad: false, dot: "square", eyeFrame: "square", eyeBall: "square", icon: "x", frameStyle: "border", frameText: "SEGUIR", frameColor: "#09090b", ecc: "HIGH" },
+        // Paletas Premium
+        { name: "Océano", fg: "#0284c7", bg: "#f0f9ff", grad: true, fg2: "#0369a1", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Atardecer", fg: "#e11d48", bg: "#fff1f2", grad: true, fg2: "#f97316", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Bosque", fg: "#15803d", bg: "#f0fdf4", grad: true, fg2: "#166534", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Neón", fg: "#a855f7", bg: "#09090b", grad: true, fg2: "#06b6d4", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Oro Negro", fg: "#d97706", bg: "#09090b", grad: true, fg2: "#f59e0b", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle", eyeColor: "#f59e0b" },
+        { name: "Platino", fg: "#334155", bg: "#f8fafc", grad: true, fg2: "#64748b", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Rubí", fg: "#be123c", bg: "#fff1f2", grad: true, fg2: "#e11d48", gradDir: "diag", dot: "rounded", eyeFrame: "circle", eyeBall: "circle" },
+        { name: "Esmeralda", fg: "#047857", bg: "#ecfdf5", grad: true, fg2: "#059669", gradDir: "diag", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Zafiro", fg: "#1d4ed8", bg: "#eff6ff", grad: true, fg2: "#2563eb", gradDir: "radial", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Amatista", fg: "#7e22ce", bg: "#faf5ff", grad: true, fg2: "#9333ea", gradDir: "diag", dot: "diamond", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Cobre", fg: "#c2410c", bg: "#fff7ed", grad: true, fg2: "#ea580c", gradDir: "vert", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Medianoche", fg: "#1e1b4b", bg: "#09090b", grad: true, fg2: "#312e81", gradDir: "diag", dot: "dots", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#38bdf8" },
+        { name: "Menta", fg: "#0d9488", bg: "#f0fdfa", grad: true, fg2: "#14b8a6", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Lavanda", fg: "#6b21a8", bg: "#faf5ff", grad: true, fg2: "#7e22ce", gradDir: "vert", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Cibernético", fg: "#22d3ee", bg: "#08090a", grad: true, fg2: "#f43f5e", gradDir: "diag", dot: "diamond", eyeFrame: "circle", eyeBall: "circle", eyeColor: "#f43f5e" },
+        { name: "Selva", fg: "#166534", bg: "#f0fdf4", grad: true, fg2: "#15803d", gradDir: "diag", dot: "rounded", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Acero", fg: "#3f3f46", bg: "#f4f4f5", grad: false, dot: "square", eyeFrame: "rounded", eyeBall: "rounded" },
+        { name: "Hielo", fg: "#0284c7", bg: "#f0f9ff", grad: true, fg2: "#38bdf8", gradDir: "radial", dot: "dots", eyeFrame: "rounded", eyeBall: "circle" },
+        { name: "Modo Oscuro", fg: "#f4f4f5", bg: "#09090b", grad: false, dot: "rounded", eyeFrame: "rounded", eyeBall: "rounded" }
       ];
       var tEl = $("templates");
       TEMPLATES.forEach(function (t, i) {
-        var d = document.createElement("div");
+        var d = document.createElement("button");
+        d.type = "button";
         d.className = "tpl" + (i === 0 ? " active" : "");
-        var grad = t.grad ? "linear-gradient(135deg," + t.fg + "," + (t.fg2 || t.fg) + ")" : t.fg;
-        d.innerHTML = '<div class="sw" style="background:' + grad + '"></div><span>' + t.name + '</span>';
+        var fg1 = t.fg;
+        var fg2 = t.fg2 || t.fg;
+        var bg = t.bg || '#ffffff';
+        var gradId = 'tgrad-' + i;
+        var colorAttr = t.grad ? 'url(#' + gradId + ')' : fg1;
+        var defs = t.grad ?
+          '<defs><linearGradient id="' + gradId + '" x1="0%" y1="0%" x2="100%" y2="100%">' +
+          '<stop offset="0%" stop-color="' + fg1 + '"/>' +
+          '<stop offset="100%" stop-color="' + fg2 + '"/>' +
+          '</linearGradient></defs>' : '';
+
+        var svgMarkup =
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            defs +
+            '<rect x="2" y="2" width="7" height="7" rx="1.5" stroke="' + colorAttr + '" stroke-width="2"/>' +
+            '<rect x="4.5" y="4.5" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="15" y="2" width="7" height="7" rx="1.5" stroke="' + colorAttr + '" stroke-width="2"/>' +
+            '<rect x="17.5" y="4.5" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="2" y="15" width="7" height="7" rx="1.5" stroke="' + colorAttr + '" stroke-width="2"/>' +
+            '<rect x="4.5" y="17.5" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="11" y="3" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="11" y="7" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="15" y="11" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="11" y="15" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="15" y="15" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="19" y="15" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="15" y="19" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+            '<rect x="19" y="19" width="2" height="2" rx="0.5" fill="' + colorAttr + '"/>' +
+          '</svg>';
+
+        d.innerHTML =
+          '<div class="sw" style="background:' + bg + ';">' +
+            svgMarkup +
+          '</div>' +
+          '<span class="tpl-name">' + t.name + '</span>';
+
         d.onclick = function () {
           document.querySelectorAll(".tpl").forEach(function (x) { x.classList.remove("active"); });
           d.classList.add("active");
