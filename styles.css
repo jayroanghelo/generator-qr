@@ -5,17 +5,17 @@
 
 :root {
   /* === Marca Jayro Anghelo === */
-  --bg: #f5f5f7;
+  --bg: #f7f7f2;
   --text: #111111;
   --ink: #111111;
   --muted: #6e6e73;
   --muted2: #8a8a8f;
   --lime: #d9ef67;
   --lime-deep: #cfe85a;
-  --lime-soft: #ecf6a6;
+  --lime-soft: #f3ffb2;
   --accent: #d9ef67;
   --accent-press: #cfe85a;
-  --accent2: #ecf6a6;
+  --accent2: #f3ffb2;
   --ok: #34c759;
   --danger: #b42318;
 
@@ -33,8 +33,8 @@
   --ring: 0 0 0 4px rgba(217, 239, 103, 0.6);
 
   --blur: saturate(150%) blur(20px);
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font: 'Zilla Slab', Georgia, serif;
+  --font-display: 'Newsreader', Georgia, serif;
 }
 
 * {
