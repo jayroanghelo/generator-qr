@@ -16,6 +16,73 @@
         type: "url"
       };
 
+      // ----- Validación / saneamiento (defensa frente a config importada maliciosa) -----
+      // Todo lo que provenga de un archivo de configuración externo pasa por aquí
+      // antes de tocar el estado, el DOM o las exportaciones (evita XSS/inyección).
+      var HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+      function safeColor(v, def) { return (typeof v === "string" && HEX_RE.test(v)) ? v : def; }
+      var ENUMS = {
+        gradDir: ["diag", "horiz", "vert", "radial"],
+        dot: ["square", "rounded", "extra-rounded", "dots", "classy", "diamond", "hexagon", "triangle", "star", "heart", "plus"],
+        eyeFrame: ["square", "rounded", "circle"],
+        eyeBall: ["square", "rounded", "extra-rounded", "circle", "dot", "diamond", "hexagon", "leaf", "plus"],
+        ecc: ["LOW", "MEDIUM", "QUARTILE", "HIGH"],
+        frameStyle: ["none", "bottom", "top", "border", "rounded", "phone"]
+      };
+      function safeEnum(key, v, def) { var a = ENUMS[key]; return (a && a.indexOf(v) >= 0) ? v : def; }
+      var FONT_WHITELIST = [
+        "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",
+        "Georgia,'Times New Roman',serif",
+        "'Courier New',monospace",
+        "'Trebuchet MS',sans-serif",
+        "Verdana,Geneva,sans-serif",
+        "'Palatino Linotype','Book Antiqua',serif",
+        "'Comic Sans MS','Chalkboard SE',cursive",
+        "Impact,'Arial Black',sans-serif",
+        "'Brush Script MT','Segoe Script',cursive",
+        "'Century Gothic','Futura',sans-serif",
+        "Garamond,'Hoefler Text',serif",
+        "Tahoma,Geneva,sans-serif"
+      ];
+      function safeFont(v) { return FONT_WHITELIST.indexOf(v) >= 0 ? v : FONT_WHITELIST[0]; }
+      function safeText(v, max) { return (v == null ? "" : String(v)).slice(0, max || 60); }
+      function safeHref(u) { u = (u == null ? "" : String(u)).trim(); return /^https?:\/\//i.test(u) ? u : "#"; }
+      function sanitizeDesign(d) {
+        if (!d || typeof d !== "object") return null;
+        var sz = (typeof d.logoSize === "number" && d.logoSize >= 10 && d.logoSize <= 30) ? d.logoSize : 20;
+        return {
+          fg: safeColor(d.fg, "#101728"), bg: safeColor(d.bg, "#ffffff"), transparent: !!d.transparent,
+          grad: !!d.grad, fg2: safeColor(d.fg2, "#6d8cff"), gradDir: safeEnum("gradDir", d.gradDir, "diag"),
+          dot: safeEnum("dot", d.dot, "square"), eyeFrame: safeEnum("eyeFrame", d.eyeFrame, "square"),
+          eyeBall: safeEnum("eyeBall", d.eyeBall, "square"), eyeColorOn: !!d.eyeColorOn,
+          eyeColor: safeColor(d.eyeColor, "#101728"), ecc: safeEnum("ecc", d.ecc, "MEDIUM"),
+          quiet: d.quiet === undefined ? true : !!d.quiet, logoSize: sz,
+          logoBg: d.logoBg === undefined ? true : !!d.logoBg,
+          frameStyle: safeEnum("frameStyle", d.frameStyle, "none"), frameText: safeText(d.frameText, 40),
+          frameFont: safeFont(d.frameFont), frameColor: safeColor(d.frameColor, "#101728")
+        };
+      }
+
+      // ----- Iconos de las pestañas (SVG inline; sin dependencia externa) -----
+      var TAB_ICONS = {
+        link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+        pencil: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        wifi: '<path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 20 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+        "user-round": '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+        mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>',
+        phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+        "message-square": '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+        "map-pin": '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+        globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+        smartphone: '<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+        "file-text": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>',
+        layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+        "scan-line": '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>'
+      };
+      function tabIcon(name) {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (TAB_ICONS[name] || "") + '</svg>';
+      }
+
       // ----- Tabs de contenido -----
       var TYPES = [
         { id: "url", label: "URL", icon: "link" },
@@ -36,7 +103,7 @@
       TYPES.forEach(function (t) {
         var b = document.createElement("button");
         b.className = "tab" + (t.id === "url" ? " active" : "");
-        b.innerHTML = "<i data-lucide=\"" + t.icon + "\"></i> <span>" + t.label + "</span>";
+        b.innerHTML = tabIcon(t.icon) + " <span>" + t.label + "</span>";
         b.onclick = function () {
           state.type = t.id;
           document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
@@ -46,12 +113,6 @@
         };
         tabsEl.appendChild(b);
       });
-
-      if (window.lucide) {
-        lucide.createIcons();
-      } else {
-        setTimeout(function () { if (window.lucide) lucide.createIcons(); }, 100);
-      }
 
       // ----- Iconos de Redes Sociales -----
       var ICONS = {
@@ -409,9 +470,12 @@
 
       // ----- Construir cadena de datos según tipo -----
       function esc(s) { return (s || "").replace(/([\\;,:"])/g, "\\$1"); }
+      // Escape específico de vCard 3.0 (RFC 2426): backslash, coma, punto y coma y
+      // salto de línea. NO se escapan los dos puntos (romperían URLs como https://).
+      function vesc(s) { return (s || "").replace(/([\\;,])/g, "\\$1").replace(/\r?\n/g, "\\n"); }
       function buildData() {
         switch (state.type) {
-          case "url": return $("url_value").value.trim();
+          case "url": { var uv = $("url_value").value.trim(); return (uv === "https://" || uv === "http://") ? "" : uv; }
           case "text": return $("text_value").value;
           case "wifi": {
             var ssid = $("wifi_ssid").value, pass = $("wifi_pass").value, enc = $("wifi_enc").value, hid = $("wifi_hidden").value;
@@ -431,17 +495,26 @@
             var f = $("vc_first").value, l = $("vc_last").value;
             if (!f && !l && !$("vc_phone").value && !$("vc_email").value) return "";
             var v = "BEGIN:VCARD\nVERSION:3.0\n";
-            v += "N:" + (l || "") + ";" + (f || "") + "\nFN:" + ((f + " " + l).trim()) + "\n";
-            if ($("vc_org").value) v += "ORG:" + $("vc_org").value + "\n";
-            if ($("vc_title").value) v += "TITLE:" + $("vc_title").value + "\n";
-            if ($("vc_phone").value) v += "TEL;TYPE=CELL:" + $("vc_phone").value + "\n";
-            if ($("vc_email").value) v += "EMAIL:" + $("vc_email").value + "\n";
-            if ($("vc_url").value) v += "URL:" + $("vc_url").value + "\n";
-            if ($("vc_adr").value) v += "ADR:;;" + $("vc_adr").value + "\n";
+            v += "N:" + vesc(l || "") + ";" + vesc(f || "") + "\nFN:" + vesc((f + " " + l).trim()) + "\n";
+            if ($("vc_org").value) v += "ORG:" + vesc($("vc_org").value) + "\n";
+            if ($("vc_title").value) v += "TITLE:" + vesc($("vc_title").value) + "\n";
+            if ($("vc_phone").value) v += "TEL;TYPE=CELL:" + vesc($("vc_phone").value) + "\n";
+            if ($("vc_email").value) v += "EMAIL:" + vesc($("vc_email").value) + "\n";
+            if ($("vc_url").value) v += "URL:" + vesc($("vc_url").value) + "\n";
+            if ($("vc_adr").value) v += "ADR:;;" + vesc($("vc_adr").value) + "\n";
             v += "END:VCARD"; return v;
           }
-          case "geo": { var la = $("geo_lat").value.trim(), lo = $("geo_lng").value.trim(); return (la && lo) ? "geo:" + la + "," + lo : ""; }
-          case "social": { var base = $("social_net").value, val = $("social_value").value.trim().replace(/^@/, ""); return val ? base + val : ""; }
+          case "geo": {
+            var la = $("geo_lat").value.trim().replace(",", "."), lo = $("geo_lng").value.trim().replace(",", ".");
+            if (!la || !lo || !isFinite(+la) || !isFinite(+lo)) return "";
+            return "geo:" + la + "," + lo;
+          }
+          case "social": {
+            var base = $("social_net").value, val = $("social_value").value.trim().replace(/^@/, "");
+            if (!val) return "";
+            if (base.indexOf("wa.me") >= 0) val = val.replace(/[^0-9]/g, ""); // WhatsApp: solo dígitos
+            return val ? base + val : "";
+          }
           case "app": {
             var mode = $("app_mode").value;
             if (mode === "ios") return $("app_ios").value.trim();
@@ -866,6 +939,8 @@
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
       }
       function htmlEsc(s) { return (s || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+      // Cadena segura para incrustar en <script>: escapa "<" para que "</script>" no cierre el bloque.
+      function jsStr(s) { return JSON.stringify(String(s == null ? "" : s)).replace(/</g, "\\u003c"); }
 
       // ----- Generar página inteligente de App Store -----
       $("genAppPage").onclick = function () {
@@ -880,10 +955,12 @@
           'a.btn{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;background:#000;border:1px solid #333;border-radius:12px;padding:14px;margin:10px 0;font-weight:600;font-size:15px}' +
           'a.btn.gp{background:#0f9d58}a.btn:hover{filter:brightness(1.15)}</style></head><body><div class="card">' +
           '<h1>' + htmlEsc(name) + '</h1><p>Descarga la aplicación en tu tienda</p>' +
-          (ios ? '<a class="btn" id="ios" href="' + htmlEsc(ios) + '">  App Store (iOS)</a>' : '') +
-          (and ? '<a class="btn gp" id="and" href="' + htmlEsc(and) + '">▶ Google Play (Android)</a>' : '') +
-          '</div><script>(function(){var ua=navigator.userAgent||"";var ios=' + JSON.stringify(ios) + ',and=' + JSON.stringify(and) + ';' +
-          'if(/iPhone|iPad|iPod/i.test(ua)&&ios)location.href=ios;else if(/Android/i.test(ua)&&and)location.href=and;})();<\/script></body></html>';
+          (ios ? '<a class="btn" id="ios" href="' + htmlEsc(safeHref(ios)) + '">  App Store (iOS)</a>' : '') +
+          (and ? '<a class="btn gp" id="and" href="' + htmlEsc(safeHref(and)) + '">▶ Google Play (Android)</a>' : '') +
+          '</div><script>(function(){var ua=navigator.userAgent||"";' +
+          'function go(u){if(/^https?:\\/\\//i.test(u))location.href=u;}' +
+          'var ios=' + jsStr(safeHref(ios)) + ',and=' + jsStr(safeHref(and)) + ';' +
+          'if(/iPhone|iPad|iPod/i.test(ua))go(ios);else if(/Android/i.test(ua))go(and);})();<\/script></body></html>';
         downloadHtml("app.html", html);
         flash("Página descargada: súbela a tu web y pega su URL arriba.", true);
       };
@@ -901,7 +978,7 @@
           '.ic{font-size:46px}h1{font-size:23px;margin:14px 0 8px}p{color:#8b98a8;font-size:15px;margin:0 0 24px}' +
           'a.btn{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(135deg,#6d8cff,#9d7bff);border-radius:12px;padding:14px 30px;font-weight:700;font-size:16px}a.btn:hover{filter:brightness(1.1)}</style></head><body>' +
           '<div class="card"><div class="ic">📄</div><h1>' + htmlEsc(title) + '</h1><p>' + htmlEsc(desc) + '</p>' +
-          '<a class="btn" href="' + htmlEsc(url) + '" target="_blank" rel="noopener">Ver PDF</a></div></body></html>';
+          '<a class="btn" href="' + htmlEsc(safeHref(url)) + '" target="_blank" rel="noopener">Ver PDF</a></div></body></html>';
         downloadHtml("pdf.html", html);
         flash("Portada descargada: súbela a tu web y pega su URL arriba.", true);
       };
@@ -1041,6 +1118,7 @@
         "eyeColorOn", "eyeColor", "ecc", "quiet", "logoSize", "logoBg", "frameStyle", "frameText", "frameFont", "frameColor"];
       function pickDesign() { var d = {}; DESIGN_KEYS.forEach(function (k) { d[k] = state[k]; }); return d; }
       function applyDesign(d) {
+        d = sanitizeDesign(d); if (!d) return;
         DESIGN_KEYS.forEach(function (k) { if (d[k] !== undefined) state[k] = d[k]; });
         $("fgColor").value = state.fg; $("fgColorTxt").value = state.fg;
         $("bgColor").value = state.bg; $("bgColorTxt").value = state.bg;
@@ -1055,7 +1133,7 @@
         $("frameColor").value = state.frameColor; $("frameColorTxt").value = state.frameColor;
         setSeg("dotStyle", state.dot); setSeg("eyeFrame", state.eyeFrame); setSeg("eyeBall", state.eyeBall); setSeg("frameStyle", state.frameStyle);
       }
-      function swatchCss(d) { return d.grad ? "linear-gradient(135deg," + d.fg + "," + (d.fg2 || d.fg) + ")" : d.fg; }
+      function swatchCss(d) { var a = safeColor(d && d.fg, "#101728"), b = safeColor(d && d.fg2, a); return (d && d.grad) ? "linear-gradient(135deg," + a + "," + b + ")" : a; }
       function lsGet(k, def) { try { return JSON.parse(localStorage.getItem(k)) || def; } catch (e) { return def; } }
       function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
 
@@ -1090,7 +1168,12 @@
         r.onload = function () {
           try {
             var cfg = JSON.parse(r.result);
-            if (cfg.presets) lsSet("qrstudio_presets", cfg.presets);
+            if (Array.isArray(cfg.presets)) {
+              var clean = cfg.presets.slice(0, 30).map(function (p) {
+                return { name: safeText(p && p.name, 40) || "Diseño", design: sanitizeDesign(p && p.design) };
+              }).filter(function (p) { return p.design; });
+              lsSet("qrstudio_presets", clean);
+            }
             if (cfg.current) { applyDesign(cfg.current); render(); }
             renderPresets(); flash("Configuración importada.", true);
           } catch (e) { flash("Archivo no válido."); }

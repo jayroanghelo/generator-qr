@@ -860,6 +860,32 @@ footer strong {
   font-weight: 600;
 }
 
+footer p {
+  margin: 0 0 10px;
+}
+
+.foot-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border, rgba(128, 128, 128, .25));
+}
+
+.foot-legal a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.foot-legal a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ---------------- Misc ---------------- */
 .err {
   color: var(--danger);
