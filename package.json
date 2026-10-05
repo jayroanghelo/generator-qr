@@ -1,14 +1,19 @@
 {
   "name": "generator-qr",
   "version": "1.0.0",
-  "description": "QR Generator",
-  "main": "app.js",
+  "private": true,
+  "description": "QR Studio: generador, personalizador y lector de códigos QR que funciona en el navegador.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jayroanghelo/generator-qr.git"
+  },
+  "author": "Jayro Anghelo",
   "devDependencies": {
     "gh-pages": "^6.3.0",
     "vite": "^5.2.0"

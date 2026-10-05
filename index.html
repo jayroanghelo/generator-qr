@@ -12,8 +12,7 @@
   <meta name="theme-color" content="#d9ef67">
   <link rel="canonical" href="https://jayroanghelo.com/generator-qr/">
 
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" href="./logo.svg" type="image/svg+xml">
 
   <!-- Open Graph / Twitter -->
   <meta property="og:title" content="QR Studio — Generador de códigos QR gratis">
@@ -31,9 +30,7 @@
     content="Códigos QR personalizados, privados y sin caducidad. Se generan en tu navegador. Descarga en PNG o SVG.">
   <meta name="twitter:image" content="https://jayroanghelo.com/img/og-default.png">
 
-  <link rel="preload" href="/fonts/newsreader-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/css/fonts.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="./styles.css">
 
   <script type="application/ld+json">
   {
@@ -57,14 +54,14 @@
   <a class="skip-link" href="#qr-main">Saltar al contenido</a>
 
   <header class="top">
-    <a class="back-home" href="/tools" aria-label="Volver a Herramientas de Jayro Anghelo">
+    <a class="back-home" href="https://jayroanghelo.com/tools" aria-label="Volver a Herramientas de Jayro Anghelo">
       <span aria-hidden="true">←</span> Herramientas
     </a>
     <img class="logo" src="logo.svg" width="44" height="44"
       alt="Logo de QR Studio" decoding="async">
     <div>
       <h1>QR Studio</h1>
-      <p>Generador de códigos QR personalizados — funciona para siempre, 100% en tu dispositivo.</p>
+      <p>Generador de códigos QR personalizados — sin caducidad propia y 100% en tu dispositivo.</p>
     </div>
     <div class="badges">
       <div class="badge"><span class="dot" aria-hidden="true"></span>Sin registro</div>
@@ -99,7 +96,7 @@
             <label class="f" for="wifi_ssid">Nombre de la red (SSID)</label>
             <input type="text" id="wifi_ssid" placeholder="MiRedWiFi">
             <label class="f" for="wifi_pass">Contraseña</label>
-            <input type="text" id="wifi_pass" placeholder="contraseña">
+            <input type="password" id="wifi_pass" placeholder="contraseña" autocomplete="off">
             <div class="row">
               <div>
                 <label class="f" for="wifi_enc">Seguridad</label>
@@ -250,7 +247,8 @@
             <button class="btn primary" id="batch_zip" style="margin-top:12px;width:100%;justify-content:center;">⬇
               Descargar ZIP</button>
             <div class="hint">Genera un QR por cada línea aplicando el diseño actual y los descarga juntos en un ZIP
-              (PNG). La vista previa muestra la primera entrada.</div>
+              (PNG). En CSV se usa una entrada por fila y se detecta la columna que contiene la URL. La vista previa
+              muestra la primera entrada.</div>
           </div>
 
           <!-- Leer QR -->
@@ -510,24 +508,23 @@
   </main>
 
   <footer>
-    <p><strong>Privacidad total:</strong> todo se genera en tu navegador con un motor propio. Las imágenes y logos que
-      subes, y la lectura por cámara, se procesan en tu dispositivo y <strong>nunca se envían a ningún servidor</strong>.
-      Tus diseños guardados y el historial se almacenan solo en este navegador; puedes borrarlos desde “Guardados” o
-      eliminando los datos del sitio.</p>
-    <p>Estos QR son <strong>estáticos</strong>: no caducan ni dependen de ningún servidor y funcionarán mientras existan
-      los lectores de QR. Guarda este archivo y úsalo offline siempre que quieras.</p>
+    <p><strong>Privacidad total:</strong> la generación, personalización y lectura se realizan en tu navegador. Las
+      imágenes, logos y capturas de cámara se procesan en tu dispositivo y <strong>no se envían a un backend de QR
+      Studio</strong>. Los diseños guardados y el historial permanecen en el almacenamiento local de este navegador.</p>
+    <p>Los QR generados son <strong>estáticos</strong>: el código no caduca por sí mismo. Si contiene una URL, un PDF o
+      cualquier recurso externo, seguirá funcionando mientras ese destino continúe disponible.</p>
     <nav class="foot-legal" aria-label="Información legal">
-      <a href="/legal/legal-notice.html">Aviso legal</a>
-      <a href="/legal/privacy.html">Privacidad</a>
-      <a href="/legal/cookies.html">Cookies</a>
-      <a href="/legal/terms.html">Términos</a>
+      <a href="https://jayroanghelo.com/legal/legal-notice.html">Aviso legal</a>
+      <a href="https://jayroanghelo.com/legal/privacy.html">Privacidad</a>
+      <a href="https://jayroanghelo.com/legal/cookies.html">Cookies</a>
+      <a href="https://jayroanghelo.com/legal/terms.html">Términos</a>
     </nav>
   </footer>
 
   <!-- Motor QR (offline) + interfaz, en archivos separados -->
-  <script src="qr-engine.js"></script>
-  <script src="jsqr.js"></script>
-  <script src="app.js"></script>
+  <script src="./qr-engine.js"></script>
+  <script src="./jsqr.js"></script>
+  <script src="./app.js"></script>
 </body>
 
 </html>
